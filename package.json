@@ -1,0 +1,54 @@
+{
+  "name": "mes_frontend",
+  "version": "0.1.0",
+  "private": true,
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "cross-env NODE_OPTIONS=--max_old_space_size=4096 refine dev",
+    "build": "refine build",
+    "start": "refine start",
+    "lint": "next lint",
+    "refine": "refine"
+  },
+  "dependencies": {
+    "@auth/core": "^0.34.3",
+    "@emotion/react": "^11.8.2",
+    "@emotion/styled": "^11.8.1",
+    "@hookform/resolvers": "^5.2.2",
+    "@mui/icons-material": "^6.5.0",
+    "@mui/lab": "^6.0.0-beta.14",
+    "@mui/material": "^6.1.7",
+    "@mui/x-data-grid": "^7.22.2",
+    "@refinedev/cli": "^2.16.48",
+    "@refinedev/core": "^5.0.8",
+    "@refinedev/devtools": "^2.0.1",
+    "@refinedev/kbar": "^2.0.0",
+    "@refinedev/mui": "^7.0.0",
+    "@refinedev/nextjs-router": "^7.0.0",
+    "@refinedev/react-hook-form": "^5.0.0",
+    "@refinedev/simple-rest": "^6.0.0",
+    "axios": "^1.13.2",
+    "js-cookie": "^3.0.5",
+    "next": "^15.2.4",
+    "next-auth": "^4.24.13",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "sass": "^1.97.2",
+    "zod": "^4.3.5"
+  },
+  "devDependencies": {
+    "@types/js-cookie": "^3.0.6",
+    "@types/node": "^20",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
+    "cross-env": "^7.0.3",
+    "eslint": "^8",
+    "eslint-config-next": "^15.0.3",
+    "typescript": "^5.8.3"
+  },
+  "refine": {
+    "projectId": "53JBKS-AueN5O-gLv9Hh"
+  }
+}

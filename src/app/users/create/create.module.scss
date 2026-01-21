@@ -1,0 +1,30 @@
+.formContainer {
+  display: flex;
+  flex-direction: column;
+}
+
+.formRow {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.formField {
+  width: calc(33.333% - 11px); /* 33% width minus gap */
+  margin-top: 8px;
+  margin-bottom: 8px;
+}
+
+@media (max-width: 900px) {
+  .formField {
+    width: calc(50% - 8px); /* 50% width minus gap on smaller screens */
+  }
+}
+
+@media (max-width: 600px) {
+  .formField {
+    width: 100%; /* Full width on mobile */
+  }
+}
