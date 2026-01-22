@@ -131,18 +131,31 @@ const App = ({ defaultMode, children }: RefineContextProps) => {
               }
             },
             {
+              name: "maquinas",
+              list: "/maquinas",
+              show: "/maquinas/detalhes/:id",
+              edit: "/maquinas/editar/:id",
+              create: "/maquinas/criar",
+              meta: {
+                label: "Máquinas"
+              }
+            },
+            {
               name: "setores",
               list: "/setores",
+              show: "/setores/detalhes/:id",
+              edit: "/setores/editar/:id",
+              create: "/setores/criar",
               meta: {
                 label: "Setores"
               }
             },
             {
-              name: "users",
-              list: "/users",
-              show: "/users/show/:id",
-              edit: "/users/edit/:id",
-              create: "/users/create",
+              name: "usuarios",
+              list: "/usuarios",
+              show: "/usuarios/detalhes/:id",
+              edit: "/usuarios/editar/:id",
+              create: "/usuarios/criar",
               meta: {
                 label: "Usuários"
               }

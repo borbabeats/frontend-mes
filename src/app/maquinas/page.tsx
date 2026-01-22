@@ -9,8 +9,9 @@ import {
   useDataGrid,
 } from "@refinedev/mui";
 import React from "react";
+import statusMaquina from "@utils/status_maquina";
 
-export default function SetoresList() {
+export default function MaquinasList() {
   const { dataGridProps } = useDataGrid({});
 
   const columns = React.useMemo<GridColDef[]>(
@@ -32,27 +33,27 @@ export default function SetoresList() {
         display: "flex",
       },
       {
-        field: "usuarios",
-        headerName: "Qtd Usuários",
-        minWidth: 100,
+        field: "setor",
+        headerName: "Setor",
+        minWidth: 200,
         display: "flex",
         renderCell: function render({ row }) {
           return (
             <div>
-              {row._count?.usuarios || 0}
+              {row.setor?.nome || "Não informado"}
             </div>
           );
         },
       },
       {
-        field: "maquinas",
-        headerName: "Qtd Máquinas",
+        field: "status",
+        headerName: "Status",
         minWidth: 100,
         display: "flex",
         renderCell: function render({ row }) {
           return (
             <div>
-              {row._count?.maquinas || 0}
+              {statusMaquina(row.status)}
             </div>
           );
         },

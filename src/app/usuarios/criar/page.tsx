@@ -1,18 +1,26 @@
 "use client";
 
-import { Box, TextField } from "@mui/material";
+import { Box, TextField, FormControl, InputLabel, Select, MenuItem, FormHelperText } from "@mui/material";
 import { Create } from "@refinedev/mui";
 import { useForm } from "@refinedev/react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createUserSchema } from "@/validations/userSchema";
 import styles from "./create.module.scss";
+import { RefineSelect } from "@components/forms";
 
-export default function CategoryCreate() {
+export interface Setor {
+  id: number;
+  nome: string;
+}
+
+export default function UserCreate() {
   const {
     saveButtonProps,
     refineCore: { formLoading },
     register,
     formState: { errors },
+    setValue,
+    watch,
   } = useForm({
     resolver: zodResolver(createUserSchema),
     defaultValues: {
@@ -23,6 +31,10 @@ export default function CategoryCreate() {
       setor_id: undefined,
     },
   });
+
+  const handleSetorChange = (value: string | number) => {
+    setValue("setor_id", Number(value));
+  };
 
   return (
     <Create isLoading={formLoading} saveButtonProps={saveButtonProps}>
@@ -44,6 +56,17 @@ export default function CategoryCreate() {
           name="nome"
         />
         <TextField
+          {...register("email")}
+          error={!!errors.email}
+          helperText={errors.email?.message}
+          margin="normal"
+          className={styles.formField}
+          InputLabelProps={{ shrink: true }}
+          type="email"
+          label={"Email"}
+          name="email"
+        />
+        <TextField
           {...register("senha")}
           error={!!errors.senha}
           helperText={errors.senha?.message}
@@ -55,41 +78,35 @@ export default function CategoryCreate() {
           name="senha"
           autoComplete="off"
         />
-        <TextField
-          {...register("email")}
-          error={!!errors.email}
-          helperText={errors.email?.message}
-          margin="normal"
-          className={styles.formField}
-          InputLabelProps={{ shrink: true }}
-          type="email"
-          label={"Email"}
-          name="email"
-        />
+    
         </Box>
         <Box className={styles.formRow}>
-        <TextField
-          {...register("cargo")}
-          error={!!errors.cargo}
-          helperText={errors.cargo?.message}
+        <RefineSelect
+         resource="setores"
+         onChange={handleSetorChange}
+         label="Setor"
+         value={watch("setor_id")}
+        />
+        <FormControl 
+          fullWidth
           margin="normal"
           className={styles.formField}
-          InputLabelProps={{ shrink: true }}
-          type="text"
-          label={"Cargo"}
-          name="cargo"
-        />
-        <TextField
-          {...register("setor_id", { valueAsNumber: true })}
-          error={!!errors.setor_id}
-          helperText={errors.setor_id?.message}
-          margin="normal"
-          className={styles.formField}
-          InputLabelProps={{ shrink: true }}
-          type="number"
-          label={"ID do Setor"}
-          name="setor_id"
-        />
+        >
+          <InputLabel>Cargo</InputLabel>
+          <Select
+            {...register("cargo")}
+            label="Cargo"
+            error={!!errors.cargo}
+          >
+            <MenuItem value="">Selecione um cargo</MenuItem>
+            <MenuItem value="ADMIN">Administrador</MenuItem>
+            <MenuItem value="GERENTE">Gerente</MenuItem>
+            <MenuItem value="OPERADOR">Operador</MenuItem>
+          </Select>
+          {errors.cargo?.message && (
+            <FormHelperText error>{errors.cargo.message}</FormHelperText>
+          )}
+        </FormControl>
         </Box>
       </Box>
     </Create>
