@@ -44,9 +44,7 @@ export const Header: React.FC<RefineThemedLayoutHeaderProps> = ({
           >
             <IconButton
               color="inherit"
-              onClick={() => {
-                setMode();
-              }}
+              onClick={setMode}
             >
               {mode === "dark" ? <LightModeOutlined /> : <DarkModeOutlined />}
             </IconButton>

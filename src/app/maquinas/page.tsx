@@ -14,6 +14,15 @@ import statusMaquina from "@utils/status_maquina";
 export default function MaquinasList() {
   const { dataGridProps } = useDataGrid({});
 
+  const statusColors: Record<string, string> = {
+    "Disponível": "blue",
+    "Em Uso": "green",
+    "Manutenção": "orange",
+    "Inativa": "red",
+    "Parada": "red",
+    "Desativada": "purple"
+  }
+
   const columns = React.useMemo<GridColDef[]>(
     () => [
       {
@@ -52,7 +61,7 @@ export default function MaquinasList() {
         display: "flex",
         renderCell: function render({ row }) {
           return (
-            <div>
+            <div style={{ color: statusColors[statusMaquina(row.status)] }}>
               {statusMaquina(row.status)}
             </div>
           );

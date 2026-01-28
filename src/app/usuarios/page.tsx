@@ -64,11 +64,14 @@ export default function UsuariosList() {
         display: "flex",
       },
       {
-        field: "setor_id",
+        field: "nomeSetor",
         flex: 1,
         headerName: "Setor",
         minWidth: 100,
         display: "flex",
+        renderCell: function render({ row }) {
+          return row.nomeSetor;
+        },
       },
       {
         field: "actions",

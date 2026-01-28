@@ -5,6 +5,14 @@ import { RefineKbar, RefineKbarProvider } from "@refinedev/kbar";
 import { RefineSnackbarProvider, useNotificationProvider } from "@refinedev/mui";
 import { SessionProvider, useSession } from "next-auth/react";
 import { signIn, signOut } from "next-auth/react";
+import { 
+  Dashboard, 
+  People, 
+  ScreenShareOutlined,
+  Business,
+  Factory
+} from "@mui/icons-material";
+import { ColorModeContextProvider } from "@contexts/color-mode";
 
 import routerProvider from "@refinedev/nextjs-router";
 import { customDataProvider } from "@providers/data-provider";
@@ -24,6 +32,90 @@ export const RefineContext = (props: RefineContextProps) => {
 
 const App = ({ defaultMode, children }: RefineContextProps) => {
   const { data: session, status } = useSession();
+
+  // Função para filtrar recursos baseado no cargo do usuário
+  const getResourcesByRole = (userRole?: string) => {
+    const allResources = [
+      {
+        name: "dashboard",
+        list: "/dashboard",
+        meta: {
+          label: "Dashboard",
+          icon: <Dashboard />
+        }
+      },{
+        name: "apontamentos",
+        list: "/apontamentos",
+        meta: {
+          label: "Monitoramento",
+          icon: <ScreenShareOutlined />
+        }
+      },
+      {
+        name: "maquinas",
+        list: "/maquinas",
+        show: "/maquinas/detalhes/:id",
+        edit: "/maquinas/editar/:id",
+        create: "/maquinas/criar",
+        meta: {
+          label: "Máquinas",
+          icon: <Factory />
+        }
+      },
+      {
+        name: "setores",
+        list: "/setores",
+        show: "/setores/detalhes/:id",
+        edit: "/setores/editar/:id",
+        create: "/setores/criar",
+        meta: {
+          label: "Setores",
+          icon: <Business />
+        }
+      },
+      {
+        name: "usuarios",
+        list: "/usuarios",
+        show: "/usuarios/detalhes/:id",
+        edit: "/usuarios/editar/:id",
+        create: "/usuarios/criar",
+        meta: {
+          label: "Usuários",
+          icon: <People />
+        }
+      }
+    ];
+
+    // Se não houver sessão ou cargo, retorna todos os recursos (será filtrado pela autenticação)
+    if (!userRole) {
+      return allResources;
+    }
+
+    // Filtra recursos baseado no cargo
+    switch (userRole.toUpperCase()) {
+      case 'OPERADOR':
+        // Operador não vê dashboard e usuários
+        return allResources.filter(resource => 
+          resource.name !== 'dashboard' && resource.name !== 'usuarios' && resource.name !== 'maquinas' && resource.name !== 'setores'
+        );
+      
+      case 'ADMIN':
+        // Administrador vê todos os recursos
+        return allResources;
+      
+      case 'GERENTE':
+        // Supervisor vê todos exceto usuários (ajuste conforme necessário)
+        return allResources.filter(resource => 
+          resource.name !== 'usuarios'
+        );
+      
+      default:
+        // Para outros cargos, mostra recursos básicos
+        return allResources.filter(resource => 
+          resource.name !== 'dashboard' && resource.name !== 'usuarios'
+        );
+    }
+  };
 
 
   const authProvider = {
@@ -117,69 +209,32 @@ const App = ({ defaultMode, children }: RefineContextProps) => {
   return (
     <RefineKbarProvider>
       <RefineSnackbarProvider>
-        <Refine
-          routerProvider={routerProvider}
-          dataProvider={customDataProvider}
-          authProvider={authProvider}
-          notificationProvider={useNotificationProvider}
-          resources={[
-            {
-              name: "dashboard",
-              list: "/dashboard",
-              meta: {
-                label: "Dashboard"
-              }
-            },
-            {
-              name: "maquinas",
-              list: "/maquinas",
-              show: "/maquinas/detalhes/:id",
-              edit: "/maquinas/editar/:id",
-              create: "/maquinas/criar",
-              meta: {
-                label: "Máquinas"
-              }
-            },
-            {
-              name: "setores",
-              list: "/setores",
-              show: "/setores/detalhes/:id",
-              edit: "/setores/editar/:id",
-              create: "/setores/criar",
-              meta: {
-                label: "Setores"
-              }
-            },
-            {
-              name: "usuarios",
-              list: "/usuarios",
-              show: "/usuarios/detalhes/:id",
-              edit: "/usuarios/editar/:id",
-              create: "/usuarios/criar",
-              meta: {
-                label: "Usuários"
-              }
-            }
-            // Adicione outros recursos conforme necessário
-          ]}
-          options={{
-            syncWithLocation: true,
-            warnWhenUnsavedChanges: true,
-            disableTelemetry: true,
-            reactQuery: {
-              clientConfig: {
-                defaultOptions: {
-                  queries: {
-                    staleTime: 5 * 60 * 1000, // 5 minutos
+        <ColorModeContextProvider defaultMode={defaultMode}>
+          <Refine
+            routerProvider={routerProvider}
+            dataProvider={customDataProvider}
+            authProvider={authProvider}
+            notificationProvider={useNotificationProvider}
+            resources={getResourcesByRole(session?.user?.role)}
+            options={{
+              syncWithLocation: true,
+              warnWhenUnsavedChanges: true,
+              disableTelemetry: true,
+              reactQuery: {
+                clientConfig: {
+                  defaultOptions: {
+                    queries: {
+                      staleTime: 5 * 60 * 1000, // 5 minutos
+                    },
                   },
                 },
               },
-            },
-          }}
-        >
-          {children}
-          <RefineKbar />
-        </Refine>
+            }}
+          >
+            {children}
+            <RefineKbar />
+          </Refine>
+        </ColorModeContextProvider>
       </RefineSnackbarProvider>
     </RefineKbarProvider>
   );

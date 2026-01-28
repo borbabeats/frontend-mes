@@ -1,11 +1,17 @@
 "use client";
 
-import { Box, TextField } from "@mui/material";
+import { Box, TextField, FormControl, InputLabel, Select, MenuItem, FormHelperText } from "@mui/material";
 import { Edit } from "@refinedev/mui";
 import { useForm } from "@refinedev/react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { updateUserSchema } from "@/validations/userSchema";
 import styles from "./edit.module.scss";
+import { RefineSelect } from "@components/forms";
+
+export interface Setor {
+  id: number;
+  nome: string;
+}
 
 export default function UserEdit() {
   const {
@@ -19,6 +25,9 @@ export default function UserEdit() {
   });
 
   //const setorValue = watch("setor");
+  const handleSetorChange = (value: string | number) => {
+    setValue("setor_id", Number(value));
+  };
 
   return (
     <Edit saveButtonProps={saveButtonProps}>
@@ -52,28 +61,33 @@ export default function UserEdit() {
         />
         </Box>
         <Box className={styles.formRow}>
-        <TextField
-          {...register("cargo")}
-          error={!!errors.cargo}
-          helperText={errors.cargo?.message}
+        <RefineSelect
+         resource="setores"
+         onChange={handleSetorChange}
+         label="Setor"
+         value={watch("setor_id")}
+        />
+        <FormControl 
           margin="normal"
           className={styles.formField}
-          InputLabelProps={{ shrink: true }}
-          type="text"
-          label={"Cargo"}
-          name="cargo"
-        />
-        <TextField
-          {...register("setor_id", { valueAsNumber: true })}
-          error={!!errors.setor_id}
-          helperText={errors.setor_id?.message}
-          margin="normal"
-          className={styles.formField}
-          InputLabelProps={{ shrink: true }}
-          type="number"
-          label={"ID do Setor"}
-          name="setor_id"
-        />
+        >
+          <InputLabel>Cargo</InputLabel>
+          <Select
+            {...register("cargo")}
+            label="Cargo"
+            error={!!errors.cargo}
+            value={watch("cargo")}
+            onChange={(e) => setValue("cargo", e.target.value)}
+          >
+            <MenuItem value="">Selecione um cargo</MenuItem>
+            <MenuItem value="ADMIN">Administrador</MenuItem>
+            <MenuItem value="GERENTE">Gerente</MenuItem>
+            <MenuItem value="OPERADOR">Operador</MenuItem>
+          </Select>
+          {errors.cargo?.message && (
+            <FormHelperText error>{errors.cargo.message}</FormHelperText>
+          )}
+        </FormControl>
         </Box>
       </Box>
     </Edit>

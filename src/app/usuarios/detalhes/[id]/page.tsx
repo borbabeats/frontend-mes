@@ -69,7 +69,7 @@ export default function UserShow() {
             <Typography variant="body1" fontWeight="bold" color="text.secondary">
               {"Setor"}
             </Typography>
-            <TextField value={record?.setor_id?.toString() || 'Não informado'} />
+            <TextField value={record?.nomeSetor || 'Não informado'} />
           </Box>
         </Box>
       </Stack>

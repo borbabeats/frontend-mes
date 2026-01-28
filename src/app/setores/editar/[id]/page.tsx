@@ -3,13 +3,19 @@
 import { Box, TextField } from "@mui/material";
 import { Edit } from "@refinedev/mui";
 import { useForm } from "@refinedev/react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { updateSetorSchema } from "@/validations/setorSchema";
 
 export default function CategoryEdit() {
   const {
     saveButtonProps,
     register,
     formState: { errors },
-  } = useForm({});
+    setValue,
+    watch,
+  } = useForm({
+    resolver: zodResolver(updateSetorSchema),
+  });
 
   return (
     <Edit saveButtonProps={saveButtonProps}>
@@ -19,17 +25,15 @@ export default function CategoryEdit() {
         autoComplete="off"
       >
         <TextField
-          {...register("title", {
-            required: "This field is required",
-          })}
-          error={!!(errors as any)?.title}
-          helperText={(errors as any)?.title?.message}
+          {...register("nome")}
+          error={!!errors?.nome}
+          helperText={errors?.nome?.message}
           margin="normal"
           fullWidth
           InputLabelProps={{ shrink: true }}
           type="text"
-          label={"Title"}
-          name="title"
+          label={"Nome"}
+          name="nome"
         />
       </Box>
     </Edit>

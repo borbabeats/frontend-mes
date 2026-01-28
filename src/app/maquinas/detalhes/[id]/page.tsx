@@ -4,8 +4,9 @@ import { Stack, Typography, Box, Avatar } from "@mui/material";
 import { useShow } from "@refinedev/core";
 import { Show, TextFieldComponent as TextField } from "@refinedev/mui";
 import styles from "./show.module.scss";
+import statusMaquina from "@utils/status_maquina";
 
-export default function UserShow() {
+export default function MaquinasShow() {
   const { query } = useShow({});
   const { data, isLoading } = query;
 
@@ -16,15 +17,11 @@ export default function UserShow() {
       <Stack gap={3}>
         {/* Header com foto e informações principais */}
         <Box className={styles.userHeader}>
-          <Avatar
-            src={record?.photo_profile}
-            className={styles.avatar}
-          >
-            {record?.nome?.charAt(0)?.toUpperCase()}
-          </Avatar>
           <Box>
             <Typography variant="h4">{record?.nome}</Typography>
-            <Typography variant="h6" color="text.secondary">{record?.cargo}</Typography>
+            <Typography variant="body2" color="text.secondary">
+              {record?.codigo}
+            </Typography>
           </Box>
         </Box>
 
@@ -39,6 +36,13 @@ export default function UserShow() {
           
           <Box className={styles.detailItem}>
             <Typography variant="body1" fontWeight="bold" color="text.secondary">
+              {"Código"}
+            </Typography>
+            <TextField value={record?.codigo} />
+          </Box>
+          
+          <Box className={styles.detailItem}>
+            <Typography variant="body1" fontWeight="bold" color="text.secondary">
               {"Nome"}
             </Typography>
             <TextField value={record?.nome} />
@@ -46,30 +50,65 @@ export default function UserShow() {
           
           <Box className={styles.detailItem}>
             <Typography variant="body1" fontWeight="bold" color="text.secondary">
-              {"Email"}
+              {"Descrição"}
             </Typography>
-            <TextField value={record?.email} />
+            <TextField value={record?.descricao || 'Não informado'} />
           </Box>
           
           <Box className={styles.detailItem}>
             <Typography variant="body1" fontWeight="bold" color="text.secondary">
-              {"Telefone"}
+              {"Fabricante"}
             </Typography>
-            <TextField value={record?.telefone || 'Não informado'} />
+            <TextField value={record?.fabricante} />
           </Box>
           
           <Box className={styles.detailItem}>
             <Typography variant="body1" fontWeight="bold" color="text.secondary">
-              {"Cargo"}
+              {"Modelo"}
             </Typography>
-            <TextField value={record?.cargo} />
+            <TextField value={record?.modelo} />
+          </Box>
+          
+          <Box className={styles.detailItem}>
+            <Typography variant="body1" fontWeight="bold" color="text.secondary">
+              {"Número de Série"}
+            </Typography>
+            <TextField value={record?.numeroSerie} />
+          </Box>
+          
+          <Box className={styles.detailItem}>
+            <Typography variant="body1" fontWeight="bold" color="text.secondary">
+              {"Ano de Fabricação"}
+            </Typography>
+            <TextField value={record?.anoFabricacao} />
+          </Box>
+          
+          <Box className={styles.detailItem}>
+            <Typography variant="body1" fontWeight="bold" color="text.secondary">
+              {"Capacidade"}
+            </Typography>
+            <TextField value={record?.capacidade} />
+          </Box>
+          
+          <Box className={styles.detailItem}>
+            <Typography variant="body1" fontWeight="bold" color="text.secondary">
+              {"Status"}
+            </Typography>
+            <TextField value={statusMaquina(record?.status)} />
+          </Box>
+          
+          <Box className={styles.detailItem}>
+            <Typography variant="body1" fontWeight="bold" color="text.secondary">
+              {"Horas de Uso"}
+            </Typography>
+            <TextField value={record?.horasUso} />
           </Box>
           
           <Box className={styles.detailItem}>
             <Typography variant="body1" fontWeight="bold" color="text.secondary">
               {"Setor"}
             </Typography>
-            <TextField value={record?.setor_id?.toString() || 'Não informado'} />
+            <TextField value={record?.setor?.nome || 'Não informado'} />
           </Box>
         </Box>
       </Stack>

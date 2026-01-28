@@ -32,30 +32,16 @@ export default function SetoresList() {
         display: "flex",
       },
       {
-        field: "usuarios",
+        field: "qtdUsuarios",
         headerName: "Qtd Usuários",
         minWidth: 100,
         display: "flex",
-        renderCell: function render({ row }) {
-          return (
-            <div>
-              {row._count?.usuarios || 0}
-            </div>
-          );
-        },
       },
       {
-        field: "maquinas",
+        field: "qtdMaquinas",
         headerName: "Qtd Máquinas",
         minWidth: 100,
         display: "flex",
-        renderCell: function render({ row }) {
-          return (
-            <div>
-              {row._count?.maquinas || 0}
-            </div>
-          );
-        },
       },
       {
         field: "created_at",

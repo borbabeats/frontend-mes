@@ -1,16 +1,24 @@
 "use client";
 
 import { Stack, Typography, Box, Avatar, Divider, Chip } from "@mui/material";
-import { useShow } from "@refinedev/core";
+import { useList, useShow } from "@refinedev/core";
 import { Show, TextFieldComponent as TextField } from "@refinedev/mui";
 import styles from "./show.module.scss";
 import statusMaquina from "@utils/status_maquina";
+import { useParams } from "next/navigation";
 
 export default function SetorShow() {
-  const { query } = useShow({});
-  const { data, isLoading } = query;
+  const params = useParams();
+  const setorId = params.id as string;
 
-  const record = data?.data;
+  // Buscar todos os setores com relacionamentos
+  const { query } = useList({
+    resource: "setores",
+  });
+  const { data: listData, isLoading, error } = query;
+
+  // Encontrar o setor específico pelo ID
+  const record = listData?.data?.find((setor: any) => setor.id === parseInt(setorId));
 
   return (
     <Show isLoading={isLoading}>
@@ -71,7 +79,7 @@ export default function SetorShow() {
           </Typography>
           <Box className={styles.detailsContainer}>
             {record?.usuarios?.length > 0 ? (
-              record.usuarios.map((usuario: any) => (
+              record?.usuarios.map((usuario: any) => (
                 <Box key={usuario.id} className={styles.detailItem}>
                   <Avatar sx={{ width: 32, height: 32, mr: 2 }}>
                     {usuario.nome?.charAt(0)?.toUpperCase()}
@@ -81,7 +89,10 @@ export default function SetorShow() {
                       {usuario.nome}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                      {usuario.email} • {usuario.cargo}
+                      {usuario.email}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {usuario.telefone} • {usuario.cargo} • {usuario.turno || 'Sem turno'}
                     </Typography>
                   </Box>
                   <Chip label={usuario.cargo} size="small" color="primary" />
@@ -109,8 +120,22 @@ export default function SetorShow() {
                       {maquina.nome}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                      ID: {maquina.id}
+                      ID: {maquina.id} • Código: {maquina.codigo}
                     </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {maquina.fabricante} • {maquina.modelo} • {maquina.numeroSerie}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Capacidade: {maquina.capacidade} • Horas de uso: {maquina.horasUso}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Ano fabricação: {maquina.anoFabricacao}
+                    </Typography>
+                    {maquina.descricao && (
+                      <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                        {maquina.descricao}
+                      </Typography>
+                    )}
                   </Box>
                   <Chip 
                     label={statusMaquina(maquina.status)} 
