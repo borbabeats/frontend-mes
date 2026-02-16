@@ -10,12 +10,13 @@ import {
   People, 
   ScreenShareOutlined,
   Business,
-  Factory
+  Factory,
+  Settings
 } from "@mui/icons-material";
 import { ColorModeContextProvider } from "@contexts/color-mode";
 
 import routerProvider from "@refinedev/nextjs-router";
-import { customDataProvider } from "@providers/data-provider";
+import { customDataProvider } from "../providers/data-provider";
 
 type RefineContextProps = {
   defaultMode?: string;
@@ -46,9 +47,22 @@ const App = ({ defaultMode, children }: RefineContextProps) => {
       },{
         name: "apontamentos",
         list: "/apontamentos",
+        show: "/apontamentos/detalhes/:id",
+        edit: "/apontamentos/editar/:id",
+        create: "/apontamentos/criar",
         meta: {
           label: "Monitoramento",
           icon: <ScreenShareOutlined />
+        }
+      },
+      {
+        name: "ordens-producao",
+        list: "/ordens-producao",
+        show: "/ordens-producao/:id",
+        create: "/ordens-producao/criar",
+        meta: {
+          label: "Ordens de Producão",
+          icon: <Factory />
         }
       },
       {

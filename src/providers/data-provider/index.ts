@@ -1,6 +1,5 @@
 "use client";
 
-import dataProvider from "@refinedev/simple-rest";
 import { getSession } from "next-auth/react";
 import axios from "axios";
 import type { DataProvider } from "@refinedev/core";
@@ -31,10 +30,8 @@ axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // Redireciona para a página de login se não autenticado
       window.location.href = '/login';
     }
-    // Para outros erros, apenas log e deixar o Refine tratar via notificationProvider
     if (error.response?.data?.message) {
       console.error('Erro da API:', error.response.data.message);
     }
@@ -42,125 +39,245 @@ axiosInstance.interceptors.response.use(
   }
 );
 
+// Data provider customizado para padrão RESTful
 export const customDataProvider: DataProvider = {
-  ...dataProvider(API_URL, axiosInstance),
+  getApiUrl: () => API_URL,
   
-  // Mapeamento de recursos para endpoints da API
-  getList: async ({ resource, ...rest }: { resource: string; [key: string]: any }) => {
-    // Mapeamento explícito de recursos para endpoints
-    const resourceMapping: Record<string, string> = {
-      'usuarios': 'usuarios',  // Frontend 'usuarios' -> Backend 'usuarios'
-      'maquinas': 'maquinas',  // Frontend 'maquinas' -> Backend 'maquinas'
-      'setores': 'setores',    // Frontend 'setores' -> Backend 'setores'
-    };
-    
-    const mappedResource = resourceMapping[resource] || resource;
-    const endpoint = `${API_URL}/${mappedResource}`;
-    
-    console.log(`🔍 API Call: ${resource} -> ${endpoint}`);
-    
-    try {
-      return await dataProvider(API_URL, axiosInstance).getList({ resource: mappedResource, ...rest });
-    } catch (error: any) {
-      console.error(`❌ API Error for ${resource}:`, error.response?.status, error.response?.data);
-      // Formata o erro para o Refine exibir a mensagem correta
-      if (error.response?.data?.message) {
-        throw new Error(error.response.data.message);
-      }
-      throw error;
+  getList: async ({ 
+    resource, 
+    pagination, 
+    sorters = [], 
+    filters = [], 
+    meta 
+  }) => {
+    const params: Record<string, any> = {};
+
+    // Paginação: ?page=1&limit=20
+    if (pagination && pagination.mode !== "off") {
+      params.page = (pagination as any).current ?? 1;
+      params.limit = (pagination as any).pageSize ?? 10;
     }
-  },
-  
-  getOne: async ({ resource, id, ...rest }: { resource: string; id: any; [key: string]: any }) => {
-    const resourceMapping: Record<string, string> = {
-      'usuarios': 'usuarios',
-      'maquinas': 'maquinas',
-      'setores': 'setores',
-    };
-    
-    const mappedResource = resourceMapping[resource] || resource;
-    console.log(`🔍 API Call: ${resource} -> ${API_URL}/${mappedResource}/${id}`);
-    
-    try {
-      return await dataProvider(API_URL, axiosInstance).getOne({ resource: mappedResource, id, ...rest });
-    } catch (error: any) {
-      console.error(`❌ API Error for ${resource}:`, error.response?.status, error.response?.data);
-      if (error.response?.data?.message) {
-        throw new Error(error.response.data.message);
-      }
-      throw error;
+
+    // Ordenação: ?sortBy=campo&sortOrder=ASC|DESC
+    if (sorters.length > 0) {
+      const firstSorter = sorters[0];
+      params.sortBy = firstSorter.field;
+      params.sortOrder = firstSorter.order.toUpperCase();
     }
-  },
-  
-  create: async ({ resource, variables, ...rest }: { resource: string; variables: any; [key: string]: any }) => {
-    const resourceMapping: Record<string, string> = {
-      'usuarios': 'usuarios',
-      'maquinas': 'maquinas',
-      'setores': 'setores',
-    };
-    
-    const mappedResource = resourceMapping[resource] || resource;
-    console.log(`🔍 API Call: ${resource} -> ${API_URL}/${mappedResource}`);
-    
-    try {
-      return await dataProvider(API_URL, axiosInstance).create({ resource: mappedResource, variables, ...rest });
-    } catch (error: any) {
-      console.error(`❌ API Error for ${resource}:`, error.response?.status, error.response?.data);
-      if (error.response?.data?.message) {
-        throw new Error(error.response.data.message);
+
+    // Filtros: ?campo=valor&filter=termo
+    filters.forEach((filter) => {
+      switch (filter.operator) {
+        case 'eq':
+          // Filtros específicos: ?maquinaId=5&opId=15
+          params[filter.field] = filter.value;
+          break;
+        case 'contains':
+          // Busca geral: ?filter=Prensa
+          if (filter.field === 'name' || filter.field === 'nome' || filter.field === 'search') {
+            params.filter = filter.value.replace(/%/g, '');
+          } else {
+            // Para contains em campos específicos
+            params[filter.field] = filter.value.replace(/%/g, '');
+          }
+          break;
+        case 'ne':
+          params[`${filter.field}_ne`] = filter.value;
+          break;
+        case 'gt':
+          params[`${filter.field}_gt`] = filter.value;
+          break;
+        case 'gte':
+          params[`${filter.field}_gte`] = filter.value;
+          break;
+        case 'lt':
+          params[`${filter.field}_lt`] = filter.value;
+          break;
+        case 'lte':
+          params[`${filter.field}_lte`] = filter.value;
+          break;
+        case 'in':
+          params[`${filter.field}_in`] = Array.isArray(filter.value) ? filter.value.join(',') : filter.value;
+          break;
       }
-      throw error;
+    });
+
+    // Adicionar parâmetros adicionais do meta (apenas os permitidos)
+    if (meta) {
+      const allowedParams = ['search', 'q', 'termo', 'busca', 'setorId', 'maquinaId', 'usuarioId', 'status', 'situacao', 'estado', 'dataInicio', 'dataFim', 'periodo', 'tipo', 'category', 'categoria', 'ativo', 'enabled', 'visivel'];
+      
+      allowedParams.forEach(param => {
+        if (meta[param] !== undefined && meta[param] !== null) {
+          params[param] = meta[param];
+        }
+      });
     }
-  },
-  
-  update: async ({ resource, id, variables, ...rest }: { resource: string; id: any; variables: any; [key: string]: any }) => {
-    const resourceMapping: Record<string, string> = {
-      'usuarios': 'usuarios',
-      'maquinas': 'maquinas',
-      'setores': 'setores',
-    };
-    
-    const mappedResource = resourceMapping[resource] || resource;
-    console.log(`🔍 API Call: ${resource} -> ${API_URL}/${mappedResource}/${id}`);
-    
-    try {
-      return await dataProvider(API_URL, axiosInstance).update({ resource: mappedResource, id, variables, ...rest });
-    } catch (error: any) {
-      console.error(`❌ API Error for ${resource}:`, error.response?.status, error.response?.data);
-      if (error.response?.data?.message) {
-        throw new Error(error.response.data.message);
-      }
-      throw error;
-    }
-  },
-  
-  deleteOne: async ({ resource, id, variables, ...rest }: { resource: string; id: any; variables?: any; [key: string]: any }) => {
+
+    // Mapeamento de recursos para endpoints
     const resourceMapping: Record<string, string> = {
       'usuarios': 'usuarios',
       'maquinas': 'maquinas',
       'setores': 'setores',
+      'apontamentos': 'apontamentos',
+      'ordens-producao': 'ordens-producao',
     };
     
     const mappedResource = resourceMapping[resource] || resource;
-    console.log(`🔍 API Call: ${resource} -> ${API_URL}/${mappedResource}/${id}`);
-    
+    const url = `${API_URL}/${mappedResource}`;
+
     try {
-      return await dataProvider(API_URL, axiosInstance).deleteOne({ resource: mappedResource, id, variables, ...rest });
+      const response = await axiosInstance.get(url, { params });
+      
+      // Extrair dados da resposta no formato esperado pelo Refine
+      let responseData = Array.isArray(response.data) ? response.data : response.data.data ?? response.data.items ?? [];
+      let total = response.data.total ?? response.data.totalItems ?? response.data.count ?? responseData.length;
+      
+      // Se tiver headers com total count
+      if (response.headers['x-total-count']) {
+        total = Number(response.headers['x-total-count']);
+      }
+      
+      return {
+        data: responseData,
+        total: total,
+      };
     } catch (error: any) {
-      console.error(`❌ API Error for ${resource}:`, error.response?.status, error.response?.data);
+      // Tratamento de erro
       if (error.response?.data?.message) {
         throw new Error(error.response.data.message);
       }
-      throw error;
+      if (error.response?.data?.errors) {
+        const errorMessages = Object.values(error.response.data.errors)
+          .flat()
+          .join(', ');
+        throw new Error(errorMessages);
+      }
+      const statusMessages: Record<number, string> = {
+        400: 'Requisição inválida',
+        401: 'Não autorizado',
+        403: 'Acesso negado',
+        404: 'Recurso não encontrado',
+        422: 'Dados inválidos',
+        429: 'Muitas requisições',
+        500: 'Erro interno do servidor',
+      };
+      const message = statusMessages[error.response?.status] || 'Erro desconhecido';
+      throw new Error(message);
     }
   },
-  
-  // Métodos customizados usando a propriedade custom
-  custom: async (params: any) => {
-    if (params.method === 'getProfile') {
-      const response = await axiosInstance.get('/users/profile/me');
-      return response.data;
+
+  getOne: async ({ resource, id, meta }) => {
+    const resourceMapping: Record<string, string> = {
+      'usuarios': 'usuarios',
+      'maquinas': 'maquinas',
+      'setores': 'setores',
+      'apontamentos': 'apontamentos',
+      'ordens-producao': 'ordens-producao',
+    };
+    
+    const mappedResource = resourceMapping[resource] || resource;
+    const url = `${API_URL}/${mappedResource}/${id}`;
+    
+    try {
+      const response = await axiosInstance.get(url);
+      return { data: response.data };
+    } catch (error: any) {
+      if (error.response?.data?.message) {
+        throw new Error(error.response.data.message);
+      }
+      throw new Error('Erro ao buscar registro');
     }
-    throw new Error('Custom method not found');
+  },
+
+  create: async ({ resource, variables, meta }) => {
+    const resourceMapping: Record<string, string> = {
+      'usuarios': 'usuarios',
+      'maquinas': 'maquinas',
+      'setores': 'setores',
+      'apontamentos': 'apontamentos',
+      'ordens-producao': 'ordens-producao',
+    };
+    
+    const mappedResource = resourceMapping[resource] || resource;
+    const url = `${API_URL}/${mappedResource}`;
+    
+    try {
+      const response = await axiosInstance.post(url, variables);
+      return { data: response.data };
+    } catch (error: any) {
+      if (error.response?.data?.message) {
+        throw new Error(error.response.data.message);
+      }
+      throw new Error('Erro ao criar registro');
+    }
+  },
+
+  update: async ({ resource, id, variables, meta }) => {
+    const resourceMapping: Record<string, string> = {
+      'usuarios': 'usuarios',
+      'maquinas': 'maquinas',
+      'setores': 'setores',
+      'apontamentos': 'apontamentos',
+      'ordens-producao': 'ordens-producao',
+    };
+    
+    const mappedResource = resourceMapping[resource] || resource;
+    const url = `${API_URL}/${mappedResource}/${id}`;
+    
+    try {
+      const response = await axiosInstance.patch(url, variables);
+      return { data: response.data };
+    } catch (error: any) {
+      if (error.response?.data?.message) {
+        throw new Error(error.response.data.message);
+      }
+      throw new Error('Erro ao atualizar registro');
+    }
+  },
+
+  deleteOne: async ({ resource, id, meta }) => {
+    const resourceMapping: Record<string, string> = {
+      'usuarios': 'usuarios',
+      'maquinas': 'maquinas',
+      'setores': 'setores',
+      'apontamentos': 'apontamentos',
+      'ordens-producao': 'ordens-producao',
+    };
+    
+    const mappedResource = resourceMapping[resource] || resource;
+    const url = `${API_URL}/${mappedResource}/${id}`;
+    
+    try {
+      await axiosInstance.delete(url);
+      return { data: {} as any };
+    } catch (error: any) {
+      if (error.response?.data?.message) {
+        throw new Error(error.response.data.message);
+      }
+      throw new Error('Erro ao excluir registro');
+    }
+  },
+
+  // Métodos customizados se necessário
+  custom: async ({ url, method, payload, query, headers, meta }) => {
+    try {
+      const response = await axiosInstance({
+        url: `${API_URL}${url}`,
+        method,
+        data: payload,
+        params: query,
+        headers,
+      });
+      
+      return { data: response.data };
+    } catch (error: any) {
+      if (error.response?.data?.message) {
+        throw new Error(error.response.data.message);
+      }
+      throw new Error('Erro na requisição customizada');
+    }
   },
 };
+
+// Exportações para uso externo
+export { axiosInstance, API_URL };

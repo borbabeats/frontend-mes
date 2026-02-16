@@ -1,53 +1,137 @@
 'use client';
 
 import { useDataGrid } from "@refinedev/mui";
+import { useList } from "@refinedev/core";
 import { 
   Card, 
   CardContent, 
   CardActions, 
   Typography, 
   Button, 
-  Grid,
+  Grid2,
   Box,
   Chip,
-  Avatar
+  Avatar,
+  TextField,
+  InputAdornment,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem
 } from "@mui/material";
 import { 
   Factory, 
   Schedule, 
   Person, 
-  CheckCircle, 
-  Error, 
-  Pending 
+  Search,
+  Add
 } from "@mui/icons-material";
+import { formatDateTime, calculateDuration } from "@utils/dateUtils";
+import { useRouter } from "next/navigation";
+import { useState, useCallback, useRef } from "react";
 
 export default function ApontamentosPage() {
-    const { dataGridProps } = useDataGrid({});
+    const router = useRouter();
+    const [searchTerm, setSearchTerm] = useState('');
+    const { dataGridProps, search, filters, setFilters } = useDataGrid({
+        resource: 'apontamentos',
+        pagination: {
+            mode: 'server',
+            pageSize: 9,
+        },
+        filters: {
+            mode: 'server',
+        },
+        syncWithLocation: true,
+    });
 
-    console.log('dataGridProps ->',dataGridProps);
+    // Buscar setores para o filtro
+    const { result: { data: setoresData } } = useList({
+        resource: 'setores',
+        pagination: {
+            mode: 'off',
+        },
+    });
     
-    const getStatusColor = (status: string) => {
-      switch(status) {
-        case 'ativo': return 'success';
-        case 'parado': return 'error';
-        case 'manutencao': return 'warning';
-        default: return 'default';
-      }
+    // Os dados podem estar em dataGridProps.rows.data ou diretamente em dataGridProps.rows
+    let rows: any[] = [];
+    
+    if (dataGridProps.rows && typeof dataGridProps.rows === 'object' && 'data' in dataGridProps.rows) {
+      rows = Array.isArray(dataGridProps.rows.data) ? dataGridProps.rows.data : [];
+    } else if (Array.isArray(dataGridProps.rows)) {
+      rows = dataGridProps.rows;
+    }
+    
+    const handleSetorChange = (setorId: string) => {
+        if (setorId === '') {
+            // Remover filtro de setor
+            setFilters([]);
+        } else {
+            // Adicionar filtro de setor
+            setFilters([{
+                field: 'setorId',
+                operator: 'eq',
+                value: setorId,
+            }]);
+        }
+    };
+    
+    const handleVerDetalhes = (id: number) => {
+        router.push(`/apontamentos/detalhes/${id}`);
     };
 
-    const getStatusIcon = (status: string) => {
-      switch(status) {
-        case 'ativo': return <CheckCircle color="success" />;
-        case 'parado': return <Error color="error" />;
-        case 'manutencao': return <Pending color="warning" />;
-        default: return null;
-      }
+    const handleEditar = (id: number) => {
+        router.push(`/apontamentos/editar/${id}`);
     };
 
-    const getEficienciaColor = (eficiencia: number) => {
-      if (eficiencia >= 80) return 'success';
-      if (eficiencia >= 60) return 'warning';
-      return 'error';
+    
+    // Ref para armazenar o timer do debounce
+    const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+    
+    const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        console.log(' Search input changed:', value);
+        setSearchTerm(value);
+        
+        // Limpar timer anterior
+        if (debounceTimerRef.current) {
+            clearTimeout(debounceTimerRef.current);
+        }
+        
+        // Configurar novo timer
+        debounceTimerRef.current = setTimeout(() => {
+            console.log(' Executing search for:', value);
+            if (value.trim()) {
+                // Adicionar filtro de busca
+                setFilters([{
+                    field: 'search',
+                    operator: 'contains',
+                    value: value.trim()
+                }]);
+            } else {
+                // Limpar todos os filtros se busca estiver vazia
+                setFilters([]);
+            }
+        }, 500); // 500ms de delay
+    };
+    
+    const handleSearchKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter') {
+            console.log(' Enter pressed, searching for:', searchTerm);
+            // Limpar timer e fazer busca imediata
+            if (debounceTimerRef.current) {
+                clearTimeout(debounceTimerRef.current);
+            }
+            if (searchTerm.trim()) {
+                setFilters([{
+                    field: 'search',
+                    operator: 'contains',
+                    value: searchTerm.trim()
+                }]);
+            } else {
+                setFilters([]);
+            }
+        }
     };
     
     return (
@@ -56,9 +140,49 @@ export default function ApontamentosPage() {
                 Apontamentos
             </Typography>
             
-            <Grid container spacing={3}>
-                {dataGridProps.rows.map((apontamento:any) => (
-                    <Grid item xs={12} sm={6} md={4} key={apontamento.id}>
+            <Box sx={{ mb: 3 }}>
+                <Grid2 container spacing={2} alignItems="center">
+                    <Grid2 size={{ xs: 12, md: 8 }}>
+                        <TextField
+                            fullWidth
+                            value={searchTerm}
+                            placeholder="Buscar por OP, máquina, operador ou produto..."
+                            variant="outlined"
+                            InputProps={{
+                                startAdornment: (
+                                    <InputAdornment position="start">
+                                        <Search />
+                                    </InputAdornment>
+                                ),
+                            }}
+                            onChange={handleSearchChange}
+                            onKeyPress={handleSearchKeyPress}
+                        />
+                    </Grid2>
+                    <Grid2 size={{ xs: 12, md: 4 }}>
+                        <FormControl fullWidth>
+                            <InputLabel id="setor-filter-label">Filtrar por Setor</InputLabel>
+                            <Select
+                                labelId="setor-filter-label"
+                                label="Filtrar por Setor"
+                                value={filters?.[0]?.value || ''}
+                                onChange={(e) => handleSetorChange(e.target.value)}
+                            >
+                                <MenuItem value="">Todos os setores</MenuItem>
+                                {setoresData?.map((setor: any) => (
+                                    <MenuItem key={setor.id} value={setor.id}>
+                                        {setor.nome}
+                                    </MenuItem>
+                                ))}
+                            </Select>
+                        </FormControl>
+                    </Grid2>
+                </Grid2>
+            </Box>
+            
+            <Grid2 container spacing={3}>
+                {rows.map((apontamento:any) => (
+                    <Grid2 size={{ xs: 12, sm: 6, md: 4 }} key={apontamento.id}>
                         <Card 
                             sx={{ 
                                 height: '100%', 
@@ -78,15 +202,18 @@ export default function ApontamentosPage() {
                                     </Avatar>
                                     <Box sx={{ flexGrow: 1 }}>
                                         <Typography variant="h6" component="div">
-                                            Máquina ID: {apontamento.maquinaId}
+                                            {apontamento.op?.codigo || `OP #${apontamento.opId}`}
                                         </Typography>
                                         <Typography variant="body2" color="text.secondary">
-                                            OP ID: {apontamento.opId}
+                                            {apontamento.maquina?.nome || `Máquina #${apontamento.maquinaId}`}
+                                        </Typography>
+                                        <Typography variant="caption" color="text.secondary">
+                                            {apontamento.op?.produto || 'Produto não informado'}
                                         </Typography>
                                     </Box>
                                     <Chip 
-                                        label="ATIVO"
-                                        color="success"
+                                        label={apontamento.dataFim ? "CONCLUÍDO" : "EM ANDAMENTO"}
+                                        color={apontamento.dataFim ? "success" : "warning"}
                                         size="small"
                                     />
                                 </Box>
@@ -94,28 +221,51 @@ export default function ApontamentosPage() {
                                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                                     <Person sx={{ mr: 1, color: 'text.secondary' }} />
                                     <Typography variant="body2">
-                                        Operador ID: {apontamento.usuarioId}
+                                        {apontamento.usuario?.nome || `Operador #${apontamento.usuarioId}`}
                                     </Typography>
                                 </Box>
                                 
-                                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                                <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                                     <Schedule sx={{ mr: 1, color: 'text.secondary' }} />
                                     <Typography variant="body2">
-                                        Apontamento ID: {apontamento.id}
+                                        Início: {formatDateTime(apontamento.dataInicio)}
+                                    </Typography>
+                                </Box>
+                                
+                                {apontamento.dataFim && (
+                                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                                        <Schedule sx={{ mr: 1, color: 'text.secondary' }} />
+                                        <Typography variant="body2">
+                                            Fim: {formatDateTime(apontamento.dataFim)}
+                                        </Typography>
+                                    </Box>
+                                )}
+                                
+                                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                                    <Typography variant="body2" sx={{ mr: 1, color: 'text.secondary' }}>
+                                        Duração:
+                                    </Typography>
+                                    <Typography variant="body2">
+                                        {calculateDuration(apontamento.dataInicio, apontamento.dataFim)}
                                     </Typography>
                                 </Box>
                                 
                                 <Box sx={{ mb: 2 }}>
                                     <Typography variant="body2" color="text.secondary" gutterBottom>
-                                        Quantidade Produzida: {apontamento.quantidadeProduzida} unidades
+                                        Produção: {apontamento.quantidadeProduzida} unidades
                                     </Typography>
+                                    {apontamento.quantidadeDefeito > 0 && (
+                                        <Typography variant="body2" color="error" gutterBottom>
+                                            Defeitos: {apontamento.quantidadeDefeito} unidades
+                                        </Typography>
+                                    )}
                                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                                         <Typography variant="body2" sx={{ mr: 1 }}>
-                                            Status:
+                                            Qualidade:
                                         </Typography>
                                         <Chip 
-                                            label="REGISTRADO"
-                                            color="primary"
+                                            label={`${Math.round(((apontamento.quantidadeProduzida - apontamento.quantidadeDefeito) / apontamento.quantidadeProduzida) * 100)}%`}
+                                            color={apontamento.quantidadeDefeito === 0 ? "success" : "warning"}
                                             size="small"
                                         />
                                     </Box>
@@ -123,17 +273,25 @@ export default function ApontamentosPage() {
                             </CardContent>
                             
                             <CardActions>
-                                <Button size="small" variant="outlined">
+                                <Button 
+                                    size="small" 
+                                    variant="outlined"
+                                    onClick={() => handleVerDetalhes(apontamento.id)}
+                                >
                                     Ver Detalhes
                                 </Button>
-                                <Button size="small" variant="contained">
+                                <Button 
+                                    size="small"
+                                    variant="contained"
+                                    onClick={() => handleEditar(apontamento.id)}
+                                >
                                     Editar
                                 </Button>
                             </CardActions>
                         </Card>
-                    </Grid>
+                    </Grid2>
                 ))}
-            </Grid>
+            </Grid2>
         </Box>
     );
 }
