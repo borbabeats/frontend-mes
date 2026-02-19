@@ -10,6 +10,7 @@ import {
 } from "@refinedev/mui";
 import React from "react";
 import statusMaquina from "@utils/status_maquina";
+import { LoadingOverlay } from "@/components/LoadingOverlay";
 
 export default function MaquinasList() {
   const { dataGridProps } = useDataGrid({});
@@ -107,6 +108,11 @@ export default function MaquinasList() {
 
   return (
     <List>
+      <LoadingOverlay 
+        isLoading={dataGridProps.loading}
+        message="Carregando..."
+        subMessage="Buscando dados da API"
+      />
       <DataGrid {...dataGridProps} columns={columns} />
     </List>
   );

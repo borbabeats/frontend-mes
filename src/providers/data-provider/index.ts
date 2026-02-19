@@ -4,7 +4,66 @@ import { getSession } from "next-auth/react";
 import axios from "axios";
 import type { DataProvider } from "@refinedev/core";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
+// Cache simples para a sessão
+let cachedSession: any = null;
+let sessionCacheTime = 0;
+const SESSION_CACHE_DURATION = 30000; // 30 segundos
+
+// Função para normalizar datas para formato esperado pela API: YYYY-MM-DDTHH:MM
+const normalizeDate = (dateValue: any): string | null => {
+  if (!dateValue) return null;
+  
+  let date: Date;
+  
+  // Se já for string, tentar converter
+  if (typeof dateValue === 'string') {
+    date = new Date(dateValue);
+  } else if (dateValue instanceof Date) {
+    date = dateValue;
+  } else if (typeof dateValue === 'number') {
+    date = new Date(dateValue);
+  } else {
+    return null;
+  }
+  
+  if (isNaN(date.getTime())) return null;
+  
+  // Formatar como YYYY-MM-DDTHH:MM (ex: 2026-02-19T22:51)
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
+};
+
+// Função para normalizar todas as datas em um objeto
+const normalizeDatesInObject = (obj: any): any => {
+  if (!obj || typeof obj !== 'object') return obj;
+  
+  const dateFields = [
+    'dataInicioPlanejado',
+    'dataFimPlanejado', 
+    'dataInicioReal',
+    'dataFimReal',
+    'createdAt',
+    'updatedAt',
+    'deletedAt'
+  ];
+  
+  const normalized = { ...obj };
+  
+  dateFields.forEach(field => {
+    if (field in normalized) {
+      normalized[field] = normalizeDate(normalized[field]);
+    }
+  });
+  
+  return normalized;
+};
 
 const axiosInstance = axios.create({
   headers: {
@@ -13,9 +72,26 @@ const axiosInstance = axios.create({
   withCredentials: true,
 });
 
+// Função otimizada para obter sessão com cache
+const getCachedSession = async () => {
+  const now = Date.now();
+  
+  // Se tiver cache válido, retorna do cache
+  if (cachedSession && (now - sessionCacheTime) < SESSION_CACHE_DURATION) {
+    return cachedSession;
+  }
+  
+  // Senão, busca nova sessão
+  const session = await getSession();
+  cachedSession = session;
+  sessionCacheTime = now;
+  
+  return session;
+};
+
 // Adiciona o token de autenticação a todas as requisições
 axiosInstance.interceptors.request.use(async (config) => {
-  const session = await getSession();
+  const session = await getCachedSession();
   const token = session?.accessToken;
   
   if (token) {
@@ -41,7 +117,7 @@ axiosInstance.interceptors.response.use(
 
 // Data provider customizado para padrão RESTful
 export const customDataProvider: DataProvider = {
-  getApiUrl: () => API_URL,
+  getApiUrl: () => API_URL || '',
   
   getList: async ({ 
     resource, 
@@ -201,8 +277,11 @@ export const customDataProvider: DataProvider = {
     const mappedResource = resourceMapping[resource] || resource;
     const url = `${API_URL}/${mappedResource}`;
     
+    // Normalizar datas para formato ISO-8601
+    const normalizedVariables = normalizeDatesInObject(variables);
+    
     try {
-      const response = await axiosInstance.post(url, variables);
+      const response = await axiosInstance.post(url, normalizedVariables);
       return { data: response.data };
     } catch (error: any) {
       if (error.response?.data?.message) {
@@ -224,8 +303,11 @@ export const customDataProvider: DataProvider = {
     const mappedResource = resourceMapping[resource] || resource;
     const url = `${API_URL}/${mappedResource}/${id}`;
     
+    // Normalizar datas para formato ISO-8601
+    const normalizedVariables = normalizeDatesInObject(variables);
+    
     try {
-      const response = await axiosInstance.patch(url, variables);
+      const response = await axiosInstance.put(url, normalizedVariables);
       return { data: response.data };
     } catch (error: any) {
       if (error.response?.data?.message) {

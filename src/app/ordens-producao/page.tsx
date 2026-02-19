@@ -1,6 +1,7 @@
 'use client';
 
 import axios from 'axios';
+import { useState } from 'react';
 import { 
   Box, 
   Typography, 
@@ -15,7 +16,15 @@ import {
   CardContent,
   Avatar,
   Divider,
-  Stack
+  Stack,
+  Pagination,
+  TableContainer,
+  Table,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody,
+  Paper
 } from '@mui/material';
 import { 
   ExpandMore,
@@ -25,10 +34,21 @@ import {
   Close,
   Add
 } from '@mui/icons-material';
+import { useDataGrid } from "@refinedev/mui";
 import { useList } from '@refinedev/core';
 import { formatDateTime } from '@utils/dateUtils';
 import { getStatusColor, getPrioridadeColor } from '@utils/status_maquina';
+import { 
+  formatarStatusOP, 
+  getStatusOPColor, 
+  verificarOPAtrasada, 
+  calcularProgressoOP 
+} from '@utils/ordemProducaoStatus';
 import { useRouter } from 'next/navigation';
+import { LoadingOverlay } from '@/components/LoadingOverlay';
+import StatusChangeButton from '@/components/ordens-producao/StatusChangeButton';
+import UpdateProductionButton from '@/components/ordens-producao/UpdateProductionButton';
+import OPFilters from '@/components/ordens-producao/OPFilters';
 
 interface OrdemProducao {
   id: number;
@@ -47,29 +67,66 @@ interface OrdemProducao {
   createdAt: string;
   updatedAt: string;
   deletedAt: string | null;
-  apontamentos?: any[];
+  apontamentos?: number;
 }
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function OrdensProducaoPage() {
   const router = useRouter();
-  const { result: { data: ordensData } } = useList<OrdemProducao>({
+  const [currentFilters, setCurrentFilters] = useState<any[]>([]);
+
+  const { dataGridProps } = useDataGrid({
     resource: 'ordens-producao',
-    pagination: { mode: 'off' }
+    pagination: {
+      mode: 'server',
+      pageSize: 10,
+    },
+    sorters: {
+      mode: 'server',
+      initial: [
+        {
+          field: 'createdAt',
+          order: 'desc',
+        },
+      ],
+    },
+    filters: {
+      mode: 'server',
+      permanent: currentFilters,
+    },
+    syncWithLocation: true,
   });
+
+  const handleFiltersChange = (filters: any[]) => {
+    setCurrentFilters(filters);
+  };
+
+  // Verificar estado de loading
+  const isLoading = dataGridProps.loading || false;
+
+  // Os dados podem estar em dataGridProps.rows.data ou diretamente em dataGridProps.rows
+  let ordensData: OrdemProducao[] = [];
+  
+  if (dataGridProps.rows && typeof dataGridProps.rows === 'object' && 'data' in dataGridProps.rows) {
+    ordensData = Array.isArray(dataGridProps.rows.data) ? dataGridProps.rows.data : [];
+  } else if (Array.isArray(dataGridProps.rows)) {
+    ordensData = dataGridProps.rows;
+  }
 
   const calcularProgresso = (produzida: number, planejada: number) => {
     return Math.round((produzida / planejada) * 100);
   };
 
-  const handleEditarOP = (id: number) => {
-    router.push(`/ordens-producao/${id}`);
+  const handleEditarOP = (id: number | string) => {
+    const numericId = typeof id === 'string' ? parseInt(id) : id;
+    router.push(`/ordens-producao/editar/${numericId}`);
   };
 
-  const handleFinalizarOP = async (id: number) => {
+  const handleFinalizarOP = async (id: number | string) => {
+    const numericId = typeof id === 'string' ? parseInt(id) : id;
     try {
-      const response = await axios.post(`${API_URL}/ordens-producao/${id}/finalizar`, {
+      const response = await axios.post(`${API_URL}/ordens-producao/${numericId}/finalizar`, {
         headers: {
           'Content-Type': 'application/json',
         },
@@ -86,9 +143,10 @@ export default function OrdensProducaoPage() {
     }
   };
 
-  const handleCancelarOP = async (id: number) => {
+  const handleCancelarOP = async (id: number | string) => {
+    const numericId = typeof id === 'string' ? parseInt(id) : id;
     try {
-      const response = await axios.post(`${API_URL}/ordens-producao/${id}/cancelar`, {
+      const response = await axios.post(`${API_URL}/ordens-producao/${numericId}/cancelar`, {
         headers: {
           'Content-Type': 'application/json',
         },
@@ -105,18 +163,44 @@ export default function OrdensProducaoPage() {
     }
   };
 
-  const handleNovoApontamento = (ordemId: number) => {
-    router.push(`/apontamentos/criar?ordemId=${ordemId}`);
+  const handleNovoApontamento = (ordemId: number | string) => {
+    const numericId = typeof ordemId === 'string' ? parseInt(ordemId) : ordemId;
+    router.push(`/apontamentos/criar?ordemId=${numericId}`);
+  };
+
+  const handleCriarOP = () => {
+    // Redirecionar para página de criação de OP ou abrir modal
+    router.push('/ordens-producao/criar');
   };
 
   return (
     <Box sx={{ p: 3 }}>
-      <Typography variant="h4" component="h1" gutterBottom>
-        Ordens de Produção
-      </Typography>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+        <Typography variant="h4" component="h1">
+          Ordens de Produção
+        </Typography>
+        <Button 
+          variant="contained" 
+          startIcon={<Add />}
+          onClick={handleCriarOP}
+        >
+          Nova Ordem de Produção
+        </Button>
+      </Box>
+
+      {/* Filtros Avançados */}
+      <OPFilters onFiltersChange={handleFiltersChange} />
+
+      <LoadingOverlay 
+        isLoading={isLoading}
+        message="Carregando..."
+        subMessage="Buscando ordens de produção"
+      />
 
       {ordensData?.map((ordem) => {
-        const progresso = calcularProgresso(ordem.quantidadeProduzida, ordem.quantidadePlanejada);
+        const progresso = calcularProgressoOP(ordem.quantidadeProduzida, ordem.quantidadePlanejada);
+        const estaAtrasada = verificarOPAtrasada(ordem.dataFimPlanejado, ordem.status as any);
+        const statusExibicao = estaAtrasada ? 'ATRASADA' : ordem.status;
         
         return (
           <Accordion key={ordem.id} sx={{ mb: 2 }}>
@@ -158,8 +242,8 @@ export default function OrdensProducaoPage() {
                       Status
                     </Typography>
                     <Chip 
-                      label={ordem.status.replace('_', ' ')}
-                      color={getStatusColor(ordem.status)}
+                      label={formatarStatusOP(statusExibicao as any)}
+                      color={getStatusOPColor(statusExibicao as any)}
                       size="small"
                     />
                   </Grid2>
@@ -289,46 +373,59 @@ export default function OrdensProducaoPage() {
                         Ações Rápidas
                       </Typography>
                       <Stack direction="column" spacing={2}>
-                      <Stack direction="row" spacing={2}>
-                        <Button 
-                          variant="outlined" 
-                          startIcon={<Edit />}
-                          size="small"
-                          onClick={() => handleEditarOP(ordem.id)}
-                        >
-                          Editar OP
-                        </Button>
-                        <Button 
-                          variant="outlined" 
-                          color="warning"
-                          startIcon={<Close />}
-                          size="small"
-                          disabled={ordem.status === 'FINALIZADA' || ordem.status === 'CANCELADA'}
-                          onClick={() => handleCancelarOP(ordem.id)}
-                        >
-                          Cancelar OP
-                        </Button>
+                        <Stack direction="row" spacing={2} flexWrap="wrap">
+                          <Button 
+                            variant="outlined" 
+                            startIcon={<Edit />}
+                            size="small"
+                            onClick={() => handleEditarOP(ordem.id)}
+                          >
+                            Editar OP
+                          </Button>
+                          <StatusChangeButton
+                            ordemId={ordem.id}
+                            statusAtual={ordem.status as any}
+                            quantidadeProduzida={ordem.quantidadeProduzida}
+                            quantidadePlanejada={ordem.quantidadePlanejada}
+                            onSuccess={() => window.location.reload()}
+                          />
+                          <UpdateProductionButton
+                            ordemId={ordem.id}
+                            quantidadeProduzida={ordem.quantidadeProduzida}
+                            quantidadeDefeitos={0} // Este valor pode vir da API se disponível
+                            onSuccess={() => window.location.reload()}
+                          />
                         </Stack>
-                        <Stack direction="row" spacing={2}>
-                        <Button 
-                          variant="outlined" 
-                          color="error"
-                          startIcon={<Close />}
-                          size="small"
-                          disabled={ordem.status === 'FINALIZADA'}
-                          onClick={() => handleFinalizarOP(ordem.id)}
-                        >
-                          Encerrar OP
-                        </Button>
-                        <Button 
-                          variant="contained"
-                          startIcon={<Add />}
-                          size="small"
-                          onClick={() => handleNovoApontamento(ordem.id)}
-                        >
-                          Novo Apontamento
-                        </Button>
-                      </Stack>
+                        <Stack direction="row" spacing={2} flexWrap="wrap">
+                          <Button 
+                            variant="outlined" 
+                            color="warning"
+                            startIcon={<Close />}
+                            size="small"
+                            disabled={ordem.status === 'FINALIZADA' || ordem.status === 'CANCELADA'}
+                            onClick={() => handleCancelarOP(ordem.id)}
+                          >
+                            Cancelar OP
+                          </Button>
+                          <Button 
+                            variant="outlined" 
+                            color="error"
+                            startIcon={<Close />}
+                            size="small"
+                            disabled={ordem.status === 'FINALIZADA'}
+                            onClick={() => handleFinalizarOP(ordem.id)}
+                          >
+                            Encerrar OP
+                          </Button>
+                          <Button 
+                            variant="contained"
+                            startIcon={<Add />}
+                            size="small"
+                            onClick={() => handleNovoApontamento(ordem.id)}
+                          >
+                            Novo Apontamento
+                          </Button>
+                        </Stack>
                       </Stack>
                     </CardContent>
                   </Card>
@@ -341,7 +438,7 @@ export default function OrdensProducaoPage() {
                         Apontamentos Vinculados
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
-                        {ordem.apontamentos?.length || 0} apontamentos encontrados
+                        {ordem.apontamentos || 0} apontamentos encontrados
                       </Typography>
                       {/* Aqui você pode adicionar uma lista de apontamentos se necessário */}
                     </CardContent>

@@ -9,6 +9,7 @@ import {
   useDataGrid,
 } from "@refinedev/mui";
 import React from "react";
+import { LoadingOverlay } from "@/components/LoadingOverlay";
 
 export default function UsuariosList() {
   const { dataGridProps } = useDataGrid({});
@@ -103,6 +104,11 @@ export default function UsuariosList() {
 
   return (
     <List>
+      <LoadingOverlay 
+        isLoading={dataGridProps.loading}
+        message="Carregando..."
+        subMessage="Buscando dados da API"
+      />
       <DataGrid {...dataGridProps} columns={columns} />
     </List>
   );

@@ -24,15 +24,19 @@ import {
   Schedule, 
   Person, 
   Search,
-  Add
+  Add,
+  CheckCircle
 } from "@mui/icons-material";
-import { formatDateTime, calculateDuration } from "@utils/dateUtils";
 import { useRouter } from "next/navigation";
-import { useState, useCallback, useRef } from "react";
+import { formatDateTime, calculateDuration } from "@/utils/dateUtils";
+import { useState, useCallback, useRef } from 'react';
+import { LoadingOverlay } from "@/components/LoadingOverlay";
+import { MESService } from '@/services/mesService';
 
 export default function ApontamentosPage() {
     const router = useRouter();
     const [searchTerm, setSearchTerm] = useState('');
+    
     const { dataGridProps, search, filters, setFilters } = useDataGrid({
         resource: 'apontamentos',
         pagination: {
@@ -44,6 +48,9 @@ export default function ApontamentosPage() {
         },
         syncWithLocation: true,
     });
+
+    // Verificar estado de loading
+    const isLoading = dataGridProps.loading || false;
 
     // Buscar setores para o filtro
     const { result: { data: setoresData } } = useList({
@@ -84,6 +91,25 @@ export default function ApontamentosPage() {
         router.push(`/apontamentos/editar/${id}`);
     };
 
+    const handleFinalizar = async (id: number) => {
+        try {
+            // Obter o apontamento atual para pegar as quantidades
+            const apontamento = rows.find(a => a.id === id);
+            
+            await MESService.apontamento.finalizar(
+                id,
+                apontamento?.quantidadeProduzida || 0,
+                apontamento?.quantidadeDefeito || 0
+            );
+            
+            alert('Apontamento finalizado com sucesso!');
+            // Recarregar a página para atualizar a lista
+            window.location.reload();
+        } catch (error) {
+            console.error('Erro ao finalizar apontamento:', error);
+            alert(`Erro ao finalizar apontamento: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
+        }
+    };
     
     // Ref para armazenar o timer do debounce
     const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -180,6 +206,12 @@ export default function ApontamentosPage() {
                 </Grid2>
             </Box>
             
+            <LoadingOverlay 
+                isLoading={isLoading}
+                message="Carregando..."
+                subMessage="Buscando dados da API"
+            />
+            
             <Grid2 container spacing={3}>
                 {rows.map((apontamento:any) => (
                     <Grid2 size={{ xs: 12, sm: 6, md: 4 }} key={apontamento.id}>
@@ -273,20 +305,36 @@ export default function ApontamentosPage() {
                             </CardContent>
                             
                             <CardActions>
-                                <Button 
-                                    size="small" 
-                                    variant="outlined"
-                                    onClick={() => handleVerDetalhes(apontamento.id)}
-                                >
-                                    Ver Detalhes
-                                </Button>
-                                <Button 
-                                    size="small"
-                                    variant="contained"
-                                    onClick={() => handleEditar(apontamento.id)}
-                                >
-                                    Editar
-                                </Button>
+                                <Box sx={{ display: 'flex', gap: 1, mb: 1 }}>
+                                    <Button 
+                                        size="small" 
+                                        variant="outlined"
+                                        onClick={() => handleVerDetalhes(apontamento.id)}
+                                    >
+                                        Ver Detalhes
+                                    </Button>
+                                    <Button 
+                                        size="small"
+                                        variant="contained"
+                                        onClick={() => handleEditar(apontamento.id)}
+                                    >
+                                        Editar
+                                    </Button>
+                                </Box>
+                                {!apontamento.dataFim && (
+                                    <Box sx={{ display: 'flex', justifyContent: 'stretch' }}>
+                                        <Button 
+                                            size="small"
+                                            variant="contained"
+                                            color="success"
+                                            startIcon={<CheckCircle />}
+                                            onClick={() => handleFinalizar(apontamento.id)}
+                                            fullWidth
+                                        >
+                                            Finalizar
+                                        </Button>
+                                    </Box>
+                                )}
                             </CardActions>
                         </Card>
                     </Grid2>

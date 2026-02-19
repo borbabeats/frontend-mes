@@ -31,7 +31,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { z } from "zod";
-import { CreateApontamentoData } from "../../../../types/apontamento";
+import { CreateApontamentoData } from "@/types/apontamento";
 
 // Schema de validação usando Zod
 const createApontamentoSchema = z.object({
@@ -40,10 +40,8 @@ const createApontamentoSchema = z.object({
   usuarioId: z.number().min(1, "Operador é obrigatório"),
   quantidadeProduzida: z.number().min(0, "Quantidade produzida não pode ser negativa").default(0),
   quantidadeDefeito: z.number().min(0, "Quantidade com defeito não pode ser negativa").default(0),
-  dataInicio: z.date({
-    required_error: "Data de início é obrigatória"
-  }),
-  dataFim: z.date().nullable().optional(),
+  dataInicio: z.string().min(14, "Data de início é obrigatória"),
+  dataFim: z.string().nullable().optional(),
 }).refine((data) => {
   if (data.dataInicio && data.dataFim && data.dataFim < data.dataInicio) {
     return false;
@@ -63,6 +61,17 @@ export default function ApontamentoCriar() {
 
   // Obter ordemId da URL
   const ordemId = searchParams?.get('ordemId');
+
+  // Estado para controlar os valores do formulário
+  const [formValues, setFormValues] = useState<any>({
+    opId: ordemId ? Number(ordemId) : '',
+    maquinaId: '',
+    usuarioId: session?.user?.id || '',
+    quantidadeProduzida: 0,
+    quantidadeDefeito: 0,
+    dataInicio: '',
+    dataFim: '',
+  });
 
   const {
     refineCore: { formLoading, onFinish },
@@ -110,22 +119,25 @@ export default function ApontamentoCriar() {
     pagination: { mode: "off" },
   });
 
-  const validateAndSubmit = async (values: any) => {
+  const validateAndSubmit = async () => {
     setIsSubmitting(true);
     setValidationErrors({});
 
     try {
-      // Converter strings para números e datas
-      const processedValues: CreateApontamentoData = {
-        ...values,
-        opId: ordemId ? Number(ordemId) : (values.opId ? Number(values.opId) : undefined),
-        maquinaId: values.maquinaId ? Number(values.maquinaId) : undefined,
-        usuarioId: session?.user?.id || (values.usuarioId ? Number(values.usuarioId) : undefined), // Usar ID do usuário logado
-        quantidadeProduzida: values.quantidadeProduzida !== undefined && values.quantidadeProduzida !== '' ? Number(values.quantidadeProduzida) : 0,
-        quantidadeDefeito: values.quantidadeDefeito !== undefined && values.quantidadeDefeito !== '' ? Number(values.quantidadeDefeito) : 0,
-        dataInicio: values.dataInicio && values.dataInicio !== '' ? new Date(values.dataInicio) : undefined,
-        dataFim: values.dataFim && values.dataFim !== '' ? new Date(values.dataFim) : null,
+      console.log('Form values being submitted:', formValues);
+      
+      // Converter strings para números e datas no formato esperado pela API
+      const processedValues = {
+        opId: ordemId ? Number(ordemId) : (formValues.opId ? Number(formValues.opId) : undefined),
+        maquinaId: formValues.maquinaId ? Number(formValues.maquinaId) : undefined,
+        usuarioId: Number(session?.user?.id || formValues.usuarioId || 0),
+        quantidadeProduzida: formValues.quantidadeProduzida !== undefined && formValues.quantidadeProduzida !== '' ? Number(formValues.quantidadeProduzida) : 0,
+        quantidadeDefeito: formValues.quantidadeDefeito !== undefined && formValues.quantidadeDefeito !== '' ? Number(formValues.quantidadeDefeito) : 0,
+        dataInicio: formValues.dataInicio && formValues.dataInicio !== '' ? formValues.dataInicio : undefined,
+        dataFim: formValues.dataFim && formValues.dataFim !== '' ? formValues.dataFim : null,
       };
+
+      console.log('Processed values:', JSON.stringify(processedValues, null, 2));
 
       // Validação do schema
       const result = createApontamentoSchema.safeParse(processedValues);
@@ -164,7 +176,7 @@ export default function ApontamentoCriar() {
       }
 
       // Pular verificação de usuário se estiver usando o usuário logado
-      if (processedValues.usuarioId && processedValues.usuarioId !== session?.user?.id && usuarioOptions) {
+      if (processedValues.usuarioId && processedValues.usuarioId !== Number(session?.user?.id) && usuarioOptions) {
         const usuarioExists = usuarioOptions.some((user: any) => user.value === processedValues.usuarioId);
         if (!usuarioExists) {
           additionalErrors.usuarioId = "Usuário não encontrado";
@@ -179,12 +191,20 @@ export default function ApontamentoCriar() {
 
       // Enviar dados
       await onFinish(processedValues);
+      console.log('apontamentos: ', processedValues);
     } catch (error) {
       console.error("Erro na validação:", error);
       setValidationErrors({ general: "Erro ao processar formulário" });
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleInputChange = (field: string, value: any) => {
+    setFormValues((prev: any) => ({
+      ...prev,
+      [field]: value
+    }));
   };
 
   const handleBack = () => {
@@ -224,19 +244,7 @@ export default function ApontamentoCriar() {
         <CardContent>
           <form onSubmit={(e) => {
             e.preventDefault();
-            const formData = new FormData(e.currentTarget);
-            const values: any = {};
-            
-            // Obter todos os valores do formulário
-            Array.from(formData.entries()).forEach(([key, value]) => {
-              if (value === '') {
-                values[key] = undefined;
-              } else {
-                values[key] = value;
-              }
-            });
-            
-            validateAndSubmit(values);
+            validateAndSubmit();
           }}>
             <Grid2 container spacing={3}>
               {/* Ordem de Produção - Obrigatório */}
@@ -273,6 +281,8 @@ export default function ApontamentoCriar() {
                       id="opId"
                       name="opId"
                       label="Ordem de Produção *"
+                      value={formValues.opId}
+                      onChange={(e) => handleInputChange('opId', e.target.value)}
                       error={!!validationErrors.opId}
                     >
                       <MenuItem value="">Selecione uma OP</MenuItem>
@@ -300,6 +310,8 @@ export default function ApontamentoCriar() {
                     id="maquinaId"
                     name="maquinaId"
                     label="Máquina *"
+                    value={formValues.maquinaId}
+                    onChange={(e) => handleInputChange('maquinaId', e.target.value)}
                     error={!!validationErrors.maquinaId}
                   >
                     <MenuItem value="">Selecione uma máquina</MenuItem>
@@ -346,6 +358,8 @@ export default function ApontamentoCriar() {
                   name="dataInicio"
                   label="Data de Início *"
                   type="datetime-local"
+                  value={formValues.dataInicio}
+                  onChange={(e) => handleInputChange('dataInicio', e.target.value)}
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
@@ -366,7 +380,8 @@ export default function ApontamentoCriar() {
                   name="quantidadeProduzida"
                   label="Quantidade Produzida"
                   type="number"
-                  defaultValue={0}
+                  value={formValues.quantidadeProduzida}
+                  onChange={(e) => handleInputChange('quantidadeProduzida', e.target.value)}
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
@@ -387,7 +402,8 @@ export default function ApontamentoCriar() {
                   name="quantidadeDefeito"
                   label="Quantidade com Defeito"
                   type="number"
-                  defaultValue={0}
+                  value={formValues.quantidadeDefeito}
+                  onChange={(e) => handleInputChange('quantidadeDefeito', e.target.value)}
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
@@ -408,6 +424,8 @@ export default function ApontamentoCriar() {
                   name="dataFim"
                   label="Data de Fim"
                   type="datetime-local"
+                  value={formValues.dataFim}
+                  onChange={(e) => handleInputChange('dataFim', e.target.value)}
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">

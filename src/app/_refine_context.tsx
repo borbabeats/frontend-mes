@@ -10,8 +10,8 @@ import {
   People, 
   ScreenShareOutlined,
   Business,
-  Factory,
-  Settings
+  PrecisionManufacturing,
+  ContentPasteGo,
 } from "@mui/icons-material";
 import { ColorModeContextProvider } from "@contexts/color-mode";
 
@@ -60,9 +60,10 @@ const App = ({ defaultMode, children }: RefineContextProps) => {
         list: "/ordens-producao",
         show: "/ordens-producao/:id",
         create: "/ordens-producao/criar",
+        edit: "/ordens-producao/editar/:id",
         meta: {
           label: "Ordens de Producão",
-          icon: <Factory />
+          icon: <ContentPasteGo />
         }
       },
       {
@@ -73,7 +74,7 @@ const App = ({ defaultMode, children }: RefineContextProps) => {
         create: "/maquinas/criar",
         meta: {
           label: "Máquinas",
-          icon: <Factory />
+          icon: <PrecisionManufacturing />
         }
       },
       {
@@ -238,7 +239,12 @@ const App = ({ defaultMode, children }: RefineContextProps) => {
                 clientConfig: {
                   defaultOptions: {
                     queries: {
-                      staleTime: 5 * 60 * 1000, // 5 minutos
+                      staleTime: 30 * 1000, // 30 segundos (reduzido de 5 minutos)
+                      gcTime: 5 * 60 * 1000, // 5 minutos em cache (gcTime substituiu cacheTime)
+                      retry: 2,
+                      retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
+                      refetchOnWindowFocus: false,
+                      refetchOnReconnect: true,
                     },
                   },
                 },
