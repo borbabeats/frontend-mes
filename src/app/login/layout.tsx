@@ -1,15 +1,24 @@
 
-import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
+"use client";
 
-export default async function LoginLayout({
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useIsAuthenticated } from "@refinedev/core";
+
+export default function LoginLayout({
   children,
 }: React.PropsWithChildren) {
-  const cookiesList = await cookies();
-  const token = cookiesList.get("auth_token")?.value;
+  const { data: authData, isLoading } = useIsAuthenticated();
+  const router = useRouter();
 
-  if (token) {
-    return redirect("/");
+  useEffect(() => {
+    if (!isLoading && authData?.authenticated) {
+      router.push("/dashboard");
+    }
+  }, [authData, isLoading, router]);
+
+  if (isLoading) {
+    return <div>Loading...</div>;
   }
 
   return <>{children}</>;

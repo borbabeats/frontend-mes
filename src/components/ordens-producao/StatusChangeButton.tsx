@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Button,
   Dialog,
@@ -18,15 +18,16 @@ import {
   InputLabel,
   Select
 } from '@mui/material';
-import { useSession } from 'next-auth/react';
 import { 
   StatusOP, 
   formatarStatusOP, 
   getStatusOPColor, 
   verificarTransicaoPermitida, 
-  getStatusPossiveis 
+  getStatusPossiveis,
+  UserRole
 } from '@/utils/ordemProducaoStatus';
 import { MESService } from '@/services/mesService';
+import { useLocalUser } from '@/hooks/useLocalUser';
 
 interface StatusChangeButtonProps {
   ordemId: number | string;
@@ -43,15 +44,14 @@ export default function StatusChangeButton({
   quantidadePlanejada,
   onSuccess
 }: StatusChangeButtonProps) {
-  const { data: session } = useSession();
+  const { user } = useLocalUser();
   const [open, setOpen] = useState(false);
   const [novoStatus, setNovoStatus] = useState<StatusOP | ''>('');
   const [motivo, setMotivo] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const userRole = session?.user?.role as any;
-  const statusPossiveis = getStatusPossiveis(statusAtual, userRole);
+  const statusPossiveis = user?.role ? getStatusPossiveis(statusAtual, user.role) : [];
 
   const handleOpen = () => {
     setOpen(true);
@@ -78,7 +78,9 @@ export default function StatusChangeButton({
       return;
     }
 
-    const verificacao = verificarTransicaoPermitida(statusAtual, novoStatus, userRole);
+    const verificacao = user?.role 
+      ? verificarTransicaoPermitida(statusAtual, novoStatus, user.role) 
+      : { permitida: false, motivo: 'User role not available' };
     if (!verificacao.permitida) {
       setError(verificacao.motivo || 'Transição não permitida');
       return;

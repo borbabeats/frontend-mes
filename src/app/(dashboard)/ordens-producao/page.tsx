@@ -17,14 +17,6 @@ import {
   Avatar,
   Divider,
   Stack,
-  Pagination,
-  TableContainer,
-  Table,
-  TableHead,
-  TableRow,
-  TableCell,
-  TableBody,
-  Paper
 } from '@mui/material';
 import { 
   ExpandMore,
@@ -32,7 +24,8 @@ import {
   Schedule,
   Edit,
   Close,
-  Add
+  Add,
+  Check
 } from '@mui/icons-material';
 import { useDataGrid } from "@refinedev/mui";
 import { useList } from '@refinedev/core';
@@ -203,6 +196,7 @@ export default function OrdensProducaoPage() {
         const statusExibicao = estaAtrasada ? 'ATRASADA' : ordem.status;
         
         return (
+          
           <Accordion key={ordem.id} sx={{ mb: 2 }}>
             <AccordionSummary expandIcon={<ExpandMore />}>
               <Box sx={{ width: '100%' }}>
@@ -409,13 +403,13 @@ export default function OrdensProducaoPage() {
                           </Button>
                           <Button 
                             variant="outlined" 
-                            color="error"
-                            startIcon={<Close />}
+                            color="success"
+                            startIcon={<Check />}
                             size="small"
                             disabled={ordem.status === 'FINALIZADA'}
                             onClick={() => handleFinalizarOP(ordem.id)}
                           >
-                            Encerrar OP
+                            Finalizar OP
                           </Button>
                           <Button 
                             variant="contained"

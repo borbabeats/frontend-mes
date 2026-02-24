@@ -1,10 +1,9 @@
 "use client";
 
 import { Grid, Paper, Typography, Box, Card, CardContent } from "@mui/material";
-import { useGetIdentity, useIsAuthenticated } from "@refinedev/core";
+import { useGetIdentity } from "@refinedev/core";
 import { useDataGrid } from "@refinedev/mui";
-import { useRouter } from "next/navigation";
-import React, { useEffect } from "react";
+import React from "react";
 
 type IUser = {
   id: number;
@@ -13,19 +12,11 @@ type IUser = {
 };
 
 export default function DashboardPage() {
-  const { isError } = useIsAuthenticated();
-  const router = useRouter();
   const { data: user } = useGetIdentity<IUser>();
   const { dataGridProps } = useDataGrid({
     resource: "dashboard",
     syncWithLocation: false,
   });
-
-  useEffect(() => {
-    if (isError) {
-      router.push("/login");
-    }
-  }, [isError, router]);
 
   // Dados de exemplo para os cards do dashboard
   const stats = [
@@ -105,3 +96,4 @@ export default function DashboardPage() {
     </Box>
   );
 }
+

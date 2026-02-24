@@ -12,8 +12,6 @@ export async function POST(
     const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
     const apiUrl = new URL(`/apontamentos/${id}/finalize`, apiBaseUrl);
     
-    console.log('Finalizando apontamento na API real:', apiUrl.toString(), body);
-    
     // Fazer requisição para a API real
     const response = await fetch(apiUrl.toString(), {
       method: 'POST',

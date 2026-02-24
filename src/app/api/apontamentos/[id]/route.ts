@@ -11,8 +11,6 @@ export async function GET(
     const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
     const apiUrl = new URL(`/apontamentos/${id}`, apiBaseUrl);
     
-    console.log('Buscando apontamento da API real:', apiUrl.toString());
-    
     // Fazer requisição para a API real
     const response = await fetch(apiUrl.toString(), {
       method: 'GET',
@@ -55,8 +53,6 @@ export async function PATCH(
     // Construir URL da API real
     const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
     const apiUrl = new URL(`/apontamentos/${id}`, apiBaseUrl);
-    
-    console.log('Atualizando apontamento na API real:', apiUrl.toString(), body);
     
     // Fazer requisição para a API real
     const response = await fetch(apiUrl.toString(), {
@@ -101,8 +97,6 @@ export async function DELETE(
     // Construir URL da API real
     const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
     const apiUrl = new URL(`/apontamentos/${id}`, apiBaseUrl);
-    
-    console.log('Excluindo apontamento na API real:', apiUrl.toString());
     
     // Fazer requisição para a API real
     const response = await fetch(apiUrl.toString(), {

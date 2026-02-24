@@ -13,8 +13,6 @@ export async function GET(request: NextRequest) {
       apiUrl.searchParams.append(key, value);
     });
     
-    console.log('Buscando apontamentos da API real:', apiUrl.toString());
-    
     // Fazer requisição para a API real
     const response = await fetch(apiUrl.toString(), {
       method: 'GET',
@@ -48,8 +46,6 @@ export async function POST(request: NextRequest) {
     // Construir URL da API real
     const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL;
     const apiUrl = new URL('/apontamentos', apiBaseUrl);
-    
-    console.log('Criando apontamento na API real:', apiUrl.toString(), body);
     
     // Fazer requisição para a API real
     const response = await fetch(apiUrl.toString(), {

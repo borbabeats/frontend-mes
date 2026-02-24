@@ -103,7 +103,7 @@ export default function UsuariosList() {
   );
 
   return (
-    <List>
+   <List>
       <LoadingOverlay 
         isLoading={dataGridProps.loading}
         message="Carregando..."

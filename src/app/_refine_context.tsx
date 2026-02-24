@@ -1,10 +1,9 @@
 "use client";
 
+import React from "react";
 import { Refine } from "@refinedev/core";
 import { RefineKbar, RefineKbarProvider } from "@refinedev/kbar";
 import { RefineSnackbarProvider, useNotificationProvider } from "@refinedev/mui";
-import { SessionProvider, useSession } from "next-auth/react";
-import { signIn, signOut } from "next-auth/react";
 import { 
   Dashboard, 
   People, 
@@ -12,27 +11,49 @@ import {
   Business,
   PrecisionManufacturing,
   ContentPasteGo,
+  Build,
 } from "@mui/icons-material";
 import { ColorModeContextProvider } from "@contexts/color-mode";
 
 import routerProvider from "@refinedev/nextjs-router";
-import { customDataProvider } from "../providers/data-provider";
+import { dataProvider } from "../providers/data-provider";
 
 type RefineContextProps = {
   defaultMode?: string;
-  children: React.ReactNode;
 };
 
-export const RefineContext = (props: RefineContextProps) => {
-  return (
-    <SessionProvider>
-      <App {...props} />
-    </SessionProvider>
-  );
+export const RefineContext = (
+  props: React.PropsWithChildren<RefineContextProps>
+) => {
+  return <App {...props} />;
 };
 
-const App = ({ defaultMode, children }: RefineContextProps) => {
-  const { data: session, status } = useSession();
+type AppProps = {
+  defaultMode?: string;
+}
+
+const App = (props: React.PropsWithChildren<AppProps>) => {
+  const [user, setUser] = React.useState<any>(null);
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+    if (typeof window !== 'undefined') {
+      const userStr = localStorage.getItem("user");
+      if (userStr) {
+        try {
+          setUser(JSON.parse(userStr));
+        } catch (error) {
+          console.error("Error parsing user from localStorage:", error);
+          setUser({});
+        }
+      } else {
+        setUser({});
+      }
+    } else {
+      setUser({});
+    }
+  }, []);
 
   // Função para filtrar recursos baseado no cargo do usuário
   const getResourcesByRole = (userRole?: string) => {
@@ -75,6 +96,17 @@ const App = ({ defaultMode, children }: RefineContextProps) => {
         meta: {
           label: "Máquinas",
           icon: <PrecisionManufacturing />
+        }
+      },
+      {
+        name: "manutencao",
+        list: "/manutencoes",
+        show: "/manutencao/editar/:id",
+        edit: "/manutencao/editar/:id",
+        create: "/manutencao/criar",
+        meta: {
+          label: "Manutenções",
+          icon: <Build />
         }
       },
       {
@@ -134,56 +166,77 @@ const App = ({ defaultMode, children }: RefineContextProps) => {
 
 
   const authProvider = {
-    // Usa o signIn do NextAuth
-    login: async ({ email, senha }: { email: string; senha: string }) => {
+    login: async (params: any) => {
       try {
-        const result = await signIn("credentials", {
-          email,
-          senha,
-          redirect: false,
+        const response = await fetch("http://localhost:3001/auth/login", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(params),
         });
-
-        if (result?.error) {
-          throw new Error("Credenciais inválidas");
+        const data = await response.json();
+        if (response.ok) {
+          if (typeof window !== 'undefined') {
+            localStorage.setItem("token", data.access_token);
+            localStorage.setItem("user", JSON.stringify(data.user));
+          }
+          return {
+            success: true,
+            redirectTo: "/",
+          };
+        } else {
+          return {
+            success: false,
+            error: data.message || "Login failed",
+          };
         }
-
-        return {
-          success: true,
-          redirectTo: "/dashboard",
-        };
       } catch (error) {
         return {
           success: false,
-          error: error instanceof Error ? error : {
-            message: "Falha no login. Verifique suas credenciais.",
-            name: "LoginError",
-          },
+          error: "Network error",
         };
       }
     },
 
     // Usa o signOut do NextAuth
     logout: async () => {
-      await signOut({ redirect: false });
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+      }
       return {
         success: true,
         redirectTo: "/login",
       };
     },
 
-    // Verifica a autenticação usando a sessão do NextAuth
-    check: async () => {
-      if (status === "loading") {
+    onError: async (error: any) => {
+      if (error.response?.status === 401) {
         return {
-          authenticated: false,
-          loading: true,
+          logout: true,
         };
       }
 
-      if (status === "unauthenticated") {
+      return {
+        error,
+      };
+    },
+
+    // Verifica a autenticação usando a sessão do NextAuth
+    check: async () => {
+      if (typeof window === 'undefined') {
         return {
           authenticated: false,
-          redirectTo: `/login`,
+          redirectTo: "/login",
+        };
+      }
+      
+      const token = localStorage.getItem("token");
+      if (!token) {
+        return {
+          authenticated: false,
+          redirectTo: "/login",
         };
       }
 
@@ -192,34 +245,34 @@ const App = ({ defaultMode, children }: RefineContextProps) => {
       };
     },
 
-    // Obtém as permissões do usuário da sessão
     getPermissions: async () => {
-      if (session?.user?.role) {
-        return [session.user.role];
-      }
       return null;
     },
 
     // Obtém a identidade do usuário da sessão
     getIdentity: async () => {
-      if (session?.user) {
-        const { id, name, image, ...rest } = session.user;
-        return {
-          ...rest,
-          id,
-          name,
-          avatar: image
-        };
+      if (typeof window === 'undefined') {
+        return null;
+      }
+      
+      const userStr = localStorage.getItem("user");
+      if (userStr) {
+        try {
+          const user = JSON.parse(userStr);
+          return {
+            name: user.nome,
+            avatar: user.photoProfile,
+          };
+        } catch (error) {
+          console.error("Error parsing user in getIdentity:", error);
+          return null;
+        }
       }
       return null;
     },
-
-    // Tratamento de erros
-    onError: async (error: any) => {
-      console.error("Erro de autenticação:", error);
-      return { error };
-    },
   };
+
+  const defaultMode = props?.defaultMode;
 
   return (
     <RefineKbarProvider>
@@ -227,10 +280,10 @@ const App = ({ defaultMode, children }: RefineContextProps) => {
         <ColorModeContextProvider defaultMode={defaultMode}>
           <Refine
             routerProvider={routerProvider}
-            dataProvider={customDataProvider}
+            dataProvider={dataProvider}
             authProvider={authProvider}
             notificationProvider={useNotificationProvider}
-            resources={getResourcesByRole(session?.user?.role)}
+            resources={mounted ? getResourcesByRole(user?.role) : []}
             options={{
               syncWithLocation: true,
               warnWhenUnsavedChanges: true,
@@ -251,7 +304,7 @@ const App = ({ defaultMode, children }: RefineContextProps) => {
               },
             }}
           >
-            {children}
+            {props.children}
             <RefineKbar />
           </Refine>
         </ColorModeContextProvider>

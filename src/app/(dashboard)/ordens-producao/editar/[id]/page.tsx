@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { useSession } from 'next-auth/react';
+import { useLocalUser } from '@/hooks/useLocalUser';
 import {
   Box,
   Typography,
@@ -65,7 +65,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 export default function EditarOrdemProducaoPage() {
   const router = useRouter();
   const params = useParams();
-  const { data: session } = useSession();
+  const { user, token } = useLocalUser();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -74,12 +74,15 @@ export default function EditarOrdemProducaoPage() {
   const id = params.id as string;
 
   // Buscar dados da OP
-  const { query, isLoading: ordemLoading } = useOne<OrdemProducao>({
+  const { query, result } = useOne<OrdemProducao>({
     resource: 'ordens-producao',
     id: id,
   });
 
-  const ordemData = query?.data;
+  console.log('result',result)
+
+  const ordemLoading = query?.isLoading || false
+  const ordemData = result;
 
   // Buscar setores e usuários para os selects
   const { result: { data: setoresData } } = useList({
@@ -102,7 +105,7 @@ export default function EditarOrdemProducaoPage() {
     dataInicioPlanejado: '',
     dataFimPlanejado: '',
     setorId: 0,
-    responsavelId: session?.user?.id ? Number(session.user.id) : undefined,
+    responsavelId: user?.id ? Number(user.id) : undefined,
     origemTipo: 'DEMANDA_INTERNA',
     origemId: '',
     observacoes: ''
@@ -110,8 +113,8 @@ export default function EditarOrdemProducaoPage() {
 
   // Preencher formulário quando os dados da OP forem carregados
   useEffect(() => {
-    if (ordemData?.data) {
-      const ordem = ordemData.data;
+    if (ordemData) {
+      const ordem = ordemData;
       setFormData({
         codigo: ordem.codigo,
         produto: ordem.produto,
@@ -199,14 +202,13 @@ export default function EditarOrdemProducaoPage() {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session?.accessToken}`
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify(payload),
       });
 
       if (response.ok) {
         const result = await response.json();
-        console.log('OP atualizada com sucesso:', result);
         setSuccess(true);
         
         // Redirecionar após 2 segundos
@@ -237,7 +239,7 @@ export default function EditarOrdemProducaoPage() {
     );
   }
 
-  if (!ordemData?.data) {
+  if (!ordemData) {
     return (
       <Box sx={{ p: 3 }}>
         <Alert severity="error">
@@ -275,8 +277,8 @@ export default function EditarOrdemProducaoPage() {
         {/* Informações da OP */}
         <Paper sx={{ p: 2, bgcolor: 'grey.50' }}>
           <Typography variant="body2" color="text.secondary">
-            OP: {ordemData?.data?.codigo} | Status: {ordemData?.data?.status?.replace('_', ' ')} | 
-            Produzido: {ordemData?.data?.quantidadeProduzida} / {ordemData?.data?.quantidadePlanejada}
+            OP: {ordemData?.codigo} | Status: {ordemData?.status?.replace('_', ' ')} | 
+            Produzido: {ordemData?.quantidadeProduzida} / {ordemData?.quantidadePlanejada}
           </Typography>
         </Paper>
 

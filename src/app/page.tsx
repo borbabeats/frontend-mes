@@ -1,17 +1,33 @@
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, useEffect } from "react";
+import { Authenticated, useIsAuthenticated } from "@refinedev/core";
+import { useRouter } from "next/navigation";
 
-import { Authenticated } from "@refinedev/core";
-import { NavigateToResource } from "@refinedev/nextjs-router";
+function HomeRedirect() {
+  const { data: authData, isLoading } = useIsAuthenticated();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!isLoading && authData?.authenticated) {
+      router.push("/dashboard");
+    }
+  }, [authData, isLoading, router]);
+
+  if (isLoading) {
+    return <div>Carregando...</div>;
+  }
+
+  return null;
+}
 
 export default function IndexPage() {
   return (
     <Suspense>
-      <Authenticated key="home-page" 
+      <Authenticated key="authenticated" 
         redirectOnFail={"/login"}
       >
-        <NavigateToResource resource="/dashboard" />
+        <HomeRedirect />
       </Authenticated>
     </Suspense>
   );
