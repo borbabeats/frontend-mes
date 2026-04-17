@@ -1,31 +1,46 @@
-# mes_frontend
+# MES Frontend - Sistema de Execução Manufatureira
 
 <div align="center" style="margin: 30px;">
-    <a href="https://refine.dev">
-    <img alt="refine logo" src="https://refine.ams3.cdn.digitaloceanspaces.com/readme/refine-readme-banner.png">
-    </a>
+    <img alt="MES Logo" src="https://img.icons8.com/color/96/000000/factory.png">
+    <h3>Sistema de Execução Manufatureira (MES)</h3>
 </div>
 <br/>
 
-This [Refine](https://github.com/refinedev/refine) project was generated with [create refine-app](https://github.com/refinedev/refine/tree/master/packages/create-refine-app).
+Frontend moderno para Sistema de Execução Manufatureira (MES) construído com [Refine](https://github.com/refinedev/refine), Next.js e Material-UI.
 
-## Getting Started
+## **Visão Geral**
 
-A React Framework for building internal tools, admin panels, dashboards & B2B apps with unmatched flexibility ✨
+O MES Frontend é uma aplicação web completa para gerenciamento de processos manufatureiros, incluindo:
 
-Refine's hooks and components simplifies the development process and eliminates the repetitive tasks by providing industry-standard solutions for crucial aspects of a project, including authentication, access control, routing, networking, state management, and i18n.
+- **Dashboard Interativo** com KPIs em tempo real
+- **Monitoramento de Produção** e apontamentos
+- **Gestão de Ordens de Produção** (OPs)
+- **Controle de Máquinas e Equipamentos**
+- **Gestão de Setores e Manutenções**
+- **Controle de Usuários e Permissões**
 
-## Available Scripts
+## **Tecnologias**
 
-### Running the development server.
+- **Framework**: [Next.js 14](https://nextjs.org/) com App Router
+- **UI Framework**: [Refine](https://refine.dev/) + [Material-UI](https://mui.com/)
+- **Autenticação**: NextAuth.js
+- **Gráficos**: Recharts
+- **Linguagem**: TypeScript
+- **Estilização**: Material-UI com modo claro/escuro
 
-```bash
-    npm run dev
-```
+## **Funcionalidades Principais**
 
-### Building for production.
+### **Dashboard Completo**
+- KPIs de Produção, Qualidade, Recursos e Prazos
+- Gráficos interativos (Produção Diária, Por Setor, Status OPs)
+- Cards de status em tempo real (Alertas, Metas, Eficiência)
+- Atualização automática de dados
 
-```bash
+### **Gestão de Produção**
+- Apontamentos de produção em tempo real
+- Ordens de Produção com status tracking
+- Monitoramento de eficiência e OEE
+- Controle de metas e prazos
     npm run build
 ```
 

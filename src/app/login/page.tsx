@@ -9,6 +9,7 @@ import Container from "@mui/material/Container";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 import { ThemedTitle } from "@refinedev/mui";
+import FactoryIcon from "@mui/icons-material/Factory";
 
 export default function Login() {
   const { mutate: login } = useLogin<{ email: string; senha: string }>();
@@ -45,6 +46,8 @@ export default function Login() {
       >
         <ThemedTitle
           collapsed={false}
+          text="Sistema MES"
+          icon={<FactoryIcon />}
           wrapperStyles={{
             fontSize: "22px",
             justifyContent: "center",

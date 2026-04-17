@@ -12,6 +12,7 @@ import {
   Business,
   PrecisionManufacturing,
   ContentPasteGo,
+  Build,
 } from "@mui/icons-material";
 import { ColorModeContextProvider } from "@contexts/color-mode";
 
@@ -41,10 +42,11 @@ const App = ({ defaultMode, children }: RefineContextProps) => {
         name: "dashboard",
         list: "/dashboard",
         meta: {
-          label: "Dashboard",
+          label: "Painel",
           icon: <Dashboard />
         }
-      },{
+      },
+      {
         name: "apontamentos",
         list: "/apontamentos",
         show: "/apontamentos/detalhes/:id",
@@ -86,6 +88,17 @@ const App = ({ defaultMode, children }: RefineContextProps) => {
         meta: {
           label: "Setores",
           icon: <Business />
+        }
+      },
+      {
+        name: "manutencoes",
+        list: "/manutencoes",
+        show: "/manutencoes/detalhes/:id",
+        create: "/manutencoes/criar",
+        edit: "/manutencoes/editar/:id",
+        meta: {
+          label: "Manutenções",
+          icon: <Build />
         }
       },
       {
