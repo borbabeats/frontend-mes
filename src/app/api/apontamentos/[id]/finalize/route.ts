@@ -9,7 +9,7 @@ export async function POST(
     const body = await request.json();
     
     // Construir URL da API real
-    const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+    const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL;
     const apiUrl = new URL(`/apontamentos/${id}/finalize`, apiBaseUrl);
     
     console.log('Finalizando apontamento na API real:', apiUrl.toString(), body);

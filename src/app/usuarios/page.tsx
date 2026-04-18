@@ -10,6 +10,7 @@ import {
 } from "@refinedev/mui";
 import React from "react";
 import { LoadingOverlay } from "@/components/LoadingOverlay";
+import Image from "next/image";
 
 export default function UsuariosList() {
   const { dataGridProps } = useDataGrid({});
@@ -26,7 +27,7 @@ export default function UsuariosList() {
           return (
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
               {row.photo_profile ? (
-                <img 
+                <Image 
                   src={row.photo_profile} 
                   alt={row.nome}
                   style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover' }}

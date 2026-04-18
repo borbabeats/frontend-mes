@@ -15,17 +15,18 @@ import { LoadingOverlay } from "@/components/LoadingOverlay";
 export default function MaquinasList() {
   const { dataGridProps } = useDataGrid({});
 
-  const statusColors: Record<string, string> = {
-    "Disponível": "blue",
-    "Em Uso": "green",
-    "Manutenção": "orange",
-    "Inativa": "red",
-    "Parada": "red",
-    "Desativada": "purple"
-  }
-
   const columns = React.useMemo<GridColDef[]>(
-    () => [
+    () => {
+      const statusColors: Record<string, string> = {
+        "Disponível": "blue",
+        "Em Uso": "green",
+        "Manutenção": "orange",
+        "Inativa": "red",
+        "Parada": "red",
+        "Desativada": "purple"
+      };
+
+      return [
       {
         field: "id",
         headerName: "ID",
@@ -102,7 +103,8 @@ export default function MaquinasList() {
           );
         },
       },
-    ],
+      ];
+    },
     []
   );
 

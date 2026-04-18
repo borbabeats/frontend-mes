@@ -8,7 +8,7 @@ export async function GET(
     const { id } = await params;
     
     // Construir URL da API real
-    const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+    const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL;
     const apiUrl = new URL(`/apontamentos/${id}`, apiBaseUrl);
     
     console.log('Buscando apontamento da API real:', apiUrl.toString());
@@ -53,7 +53,7 @@ export async function PATCH(
     const body = await request.json();
     
     // Construir URL da API real
-    const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+    const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL;
     const apiUrl = new URL(`/apontamentos/${id}`, apiBaseUrl);
     
     console.log('Atualizando apontamento na API real:', apiUrl.toString(), body);
@@ -99,7 +99,7 @@ export async function DELETE(
     const { id } = await params;
     
     // Construir URL da API real
-    const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+    const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL;
     const apiUrl = new URL(`/apontamentos/${id}`, apiBaseUrl);
     
     console.log('Excluindo apontamento na API real:', apiUrl.toString());
