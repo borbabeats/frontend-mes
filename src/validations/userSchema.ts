@@ -19,10 +19,7 @@ export const createUserSchema = z.object({
     .min(2, "Cargo deve ter pelo menos 2 caracteres")
     .max(50, "Cargo deve ter no máximo 50 caracteres"),
   
-  setor_id: z.number({
-    required_error: "ID do Setor é obrigatório",
-    invalid_type_error: "ID do Setor deve ser um número"
-  })
+  setor_id: z.number()
     .int("ID do Setor deve ser um número inteiro")
     .positive("ID do Setor deve ser um número positivo")
 });

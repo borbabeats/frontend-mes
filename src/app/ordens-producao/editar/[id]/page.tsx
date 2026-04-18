@@ -74,7 +74,7 @@ export default function EditarOrdemProducaoPage() {
   const id = params.id as string;
 
   // Buscar dados da OP
-  const { query, isLoading: ordemLoading } = useOne<OrdemProducao>({
+  const { query } = useOne<OrdemProducao>({
     resource: 'ordens-producao',
     id: id,
   });
@@ -131,11 +131,11 @@ export default function EditarOrdemProducaoPage() {
   }, [ordemData]);
 
   useEffect(() => {
-    if (ordemLoading) {
+    if (query?.isLoading) {
       setError('Erro ao carregar dados da ordem de produção');
       setLoading(false);
     }
-  }, [ordemLoading]);
+  }, [query?.isLoading]);
 
   const handleInputChange = (field: keyof UpdateOrdemProducaoData, value: string | number) => {
     // Converter para número se for o campo responsavelId
@@ -229,7 +229,7 @@ export default function EditarOrdemProducaoPage() {
     router.back();
   };
 
-  if (loading || ordemLoading) {
+  if (loading || query?.isLoading) {
     return (
       <Box sx={{ p: 3, display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}>
         <CircularProgress />
