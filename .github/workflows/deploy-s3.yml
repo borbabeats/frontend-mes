@@ -1,0 +1,106 @@
+name: Deploy Frontend to S3 + CloudFront
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Run linting
+        run: npm run lint || true
+      
+      - name: Build application
+        run: npm run build
+
+  deploy-s3:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+      - uses: actions/checkout@v5
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+      
+      - name: Build static application
+        run: npm run build
+      
+      - name: Deploy to S3
+        run: |
+          aws s3 sync out/ s3://${{ secrets.S3_BUCKET_NAME }} --delete
+          echo "✅ Files uploaded to S3"
+      
+      - name: Invalidate CloudFront cache
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} \
+            --paths "/*"
+          echo "✅ CloudFront cache invalidated"
+
+  health-check:
+    needs: deploy-s3
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Wait for CloudFront propagation
+        run: sleep 60
+      
+      - name: Health Check
+        run: |
+          echo "Testing frontend health endpoint..."
+          for i in {1..5}; do
+            echo "Attempt $i/5..."
+            response=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 https://${{ secrets.FRONTEND_DOMAIN }})
+            echo "Response code: $response"
+            if [ $response -eq 200 ]; then
+              echo "✅ Health check passed - Frontend is responding"
+              exit 0
+            fi
+            echo "Retrying in 15 seconds..."
+            sleep 15
+          done
+          echo "❌ Health check failed after 5 attempts"
+          exit 1
+      
+      - name: Frontend Accessibility Check
+        run: |
+          response=$(curl -s -o /dev/null -w "%{http_code}" https://${{ secrets.FRONTEND_DOMAIN }})
+          if [ $response -eq 200 ]; then
+            echo "✅ Frontend is accessible"
+          else
+            echo "❌ Frontend check failed - Status code: $response"
+            exit 1
+          fi
