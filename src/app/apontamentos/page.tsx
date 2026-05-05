@@ -1,5 +1,7 @@
 'use client';
 
+// Configurar página como dynamic para build estático
+
 import { useDataGrid } from "@refinedev/mui";
 import { useList } from "@refinedev/core";
 import { 
@@ -116,7 +118,6 @@ export default function ApontamentosPage() {
     
     const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
-        console.log(' Search input changed:', value);
         setSearchTerm(value);
         
         // Limpar timer anterior
@@ -126,7 +127,6 @@ export default function ApontamentosPage() {
         
         // Configurar novo timer
         debounceTimerRef.current = setTimeout(() => {
-            console.log(' Executing search for:', value);
             if (value.trim()) {
                 // Adicionar filtro de busca
                 setFilters([{
@@ -143,7 +143,6 @@ export default function ApontamentosPage() {
     
     const handleSearchKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === 'Enter') {
-            console.log(' Enter pressed, searching for:', searchTerm);
             // Limpar timer e fazer busca imediata
             if (debounceTimerRef.current) {
                 clearTimeout(debounceTimerRef.current);

@@ -1,15 +1,15 @@
 "use client";
 
-import { getSession } from "next-auth/react";
+import { authClient } from "@/lib/auth-client";
 import axios from "axios";
 import type { DataProvider } from "@refinedev/core";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-// Cache simples para a sessão
-let cachedSession: any = null;
-let sessionCacheTime = 0;
-const SESSION_CACHE_DURATION = 30000; // 30 segundos
+// Cache simples para o token
+let cachedToken: string | null = null;
+let tokenCacheTime = 0;
+const TOKEN_CACHE_DURATION = 30000; // 30 segundos
 
 // Função para normalizar datas para formato esperado pela API: YYYY-MM-DDTHH:MM
 const normalizeDate = (dateValue: any): string | null => {
@@ -72,27 +72,26 @@ const axiosInstance = axios.create({
   withCredentials: true,
 });
 
-// Função otimizada para obter sessão com cache
-const getCachedSession = async () => {
+// Função otimizada para obter token com cache
+const getCachedToken = async () => {
   const now = Date.now();
   
   // Se tiver cache válido, retorna do cache
-  if (cachedSession && (now - sessionCacheTime) < SESSION_CACHE_DURATION) {
-    return cachedSession;
+  if (cachedToken && (now - tokenCacheTime) < TOKEN_CACHE_DURATION) {
+    return cachedToken;
   }
   
-  // Senão, busca nova sessão
-  const session = await getSession();
-  cachedSession = session;
-  sessionCacheTime = now;
+  // Senão, busca novo token do authClient
+  const token = authClient.token;
+  cachedToken = token;
+  tokenCacheTime = now;
   
-  return session;
+  return token;
 };
 
 // Adiciona o token de autenticação a todas as requisições
 axiosInstance.interceptors.request.use(async (config) => {
-  const session = await getCachedSession();
-  const token = session?.accessToken;
+  const token = await getCachedToken();
   
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;

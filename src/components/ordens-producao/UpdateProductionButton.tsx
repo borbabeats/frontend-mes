@@ -14,7 +14,7 @@ import {
   CircularProgress,
   Grid2
 } from '@mui/material';
-import { useSession } from 'next-auth/react';
+import { useAuth } from '@/lib/auth-client';
 import { ProductionQuantityLimits, ErrorOutline } from '@mui/icons-material';
 import { MESService } from '@/services/mesService';
 
@@ -31,7 +31,7 @@ export default function UpdateProductionButton({
   quantidadeDefeitos,
   onSuccess
 }: UpdateProductionButtonProps) {
-  const { data: session } = useSession();
+  const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const [novaQuantidade, setNovaQuantidade] = useState(quantidadeProduzida.toString());
   const [novosDefeitos, setNovosDefeitos] = useState(quantidadeDefeitos.toString());

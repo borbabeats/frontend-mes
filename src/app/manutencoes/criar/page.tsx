@@ -1,5 +1,7 @@
 "use client";
 
+// Configurar página como dynamic para build estático
+
 import { Create } from "@refinedev/mui";
 import { useForm } from "@refinedev/react-hook-form";
 import { useSelect } from "@refinedev/core";

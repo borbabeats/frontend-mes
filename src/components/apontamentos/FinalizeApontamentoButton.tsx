@@ -14,7 +14,7 @@ import {
   CircularProgress,
   Grid2
 } from '@mui/material';
-import { useSession } from 'next-auth/react';
+import { useAuth } from '@/lib/auth-client';
 import { ProductionQuantityLimits, ErrorOutline, CheckCircle } from '@mui/icons-material';
 import { MESService } from '@/services/mesService';
 
@@ -27,7 +27,7 @@ export default function FinalizeApontamentoButton({
   apontamentoId,
   onSuccess
 }: FinalizeApontamentoButtonProps) {
-  const { data: session } = useSession();
+  const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const [quantidadeProduzida, setQuantidadeProduzida] = useState('');
   const [quantidadeDefeito, setQuantidadeDefeito] = useState('');

@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { useForm } from "@refinedev/react-hook-form";
 import { useSelect } from "@refinedev/core";
@@ -29,7 +29,7 @@ import {
 } from "@mui/icons-material";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useEffect } from "react";
-import { useSession } from "next-auth/react";
+import { useAuth } from '@/lib/auth-client';
 import { z } from "zod";
 import { CreateApontamentoData } from "@/types/apontamento";
 
@@ -55,7 +55,7 @@ const createApontamentoSchema = z.object({
 export default function ApontamentoCriar() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { data: session } = useSession();
+  const { user } = useAuth();
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -66,7 +66,7 @@ export default function ApontamentoCriar() {
   const [formValues, setFormValues] = useState<any>({
     opId: ordemId ? Number(ordemId) : '',
     maquinaId: '',
-    usuarioId: session?.user?.id || '',
+    usuarioId: user?.id || '',
     quantidadeProduzida: 0,
     quantidadeDefeito: 0,
     dataInicio: '',
@@ -124,20 +124,17 @@ export default function ApontamentoCriar() {
     setValidationErrors({});
 
     try {
-      console.log('Form values being submitted:', formValues);
       
       // Converter strings para números e datas no formato esperado pela API
       const processedValues = {
         opId: ordemId ? Number(ordemId) : (formValues.opId ? Number(formValues.opId) : undefined),
         maquinaId: formValues.maquinaId ? Number(formValues.maquinaId) : undefined,
-        usuarioId: Number(session?.user?.id || formValues.usuarioId || 0),
+        usuarioId: Number(user?.id || formValues.usuarioId || 0),
         quantidadeProduzida: formValues.quantidadeProduzida !== undefined && formValues.quantidadeProduzida !== '' ? Number(formValues.quantidadeProduzida) : 0,
         quantidadeDefeito: formValues.quantidadeDefeito !== undefined && formValues.quantidadeDefeito !== '' ? Number(formValues.quantidadeDefeito) : 0,
         dataInicio: formValues.dataInicio && formValues.dataInicio !== '' ? formValues.dataInicio : undefined,
         dataFim: formValues.dataFim && formValues.dataFim !== '' ? formValues.dataFim : null,
       };
-
-      console.log('Processed values:', JSON.stringify(processedValues, null, 2));
 
       // Validação do schema
       const result = createApontamentoSchema.safeParse(processedValues);
@@ -176,7 +173,7 @@ export default function ApontamentoCriar() {
       }
 
       // Pular verificação de usuário se estiver usando o usuário logado
-      if (processedValues.usuarioId && processedValues.usuarioId !== Number(session?.user?.id) && usuarioOptions) {
+      if (processedValues.usuarioId && processedValues.usuarioId !== Number(user?.id) && usuarioOptions) {
         const usuarioExists = usuarioOptions.some((user: any) => user.value === processedValues.usuarioId);
         if (!usuarioExists) {
           additionalErrors.usuarioId = "Usuário não encontrado";
@@ -191,7 +188,6 @@ export default function ApontamentoCriar() {
 
       // Enviar dados
       await onFinish(processedValues);
-      console.log('apontamentos: ', processedValues);
     } catch (error) {
       console.error("Erro na validação:", error);
       setValidationErrors({ general: "Erro ao processar formulário" });
@@ -336,7 +332,7 @@ export default function ApontamentoCriar() {
                   id="usuarioId"
                   name="usuarioId"
                   label="Operador"
-                  value={session?.user?.name || ''}
+                  value={user?.name || ''}
                   disabled
                   InputProps={{
                     startAdornment: (

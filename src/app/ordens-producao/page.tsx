@@ -1,5 +1,7 @@
 'use client';
 
+// Configurar página como dynamic para build estático
+
 import axios from 'axios';
 import { useState } from 'react';
 import { 

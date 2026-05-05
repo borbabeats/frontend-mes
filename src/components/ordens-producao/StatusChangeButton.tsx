@@ -18,7 +18,7 @@ import {
   InputLabel,
   Select
 } from '@mui/material';
-import { useSession } from 'next-auth/react';
+import { useAuth } from '@/lib/auth-client';
 import { 
   StatusOP, 
   formatarStatusOP, 
@@ -43,14 +43,14 @@ export default function StatusChangeButton({
   quantidadePlanejada,
   onSuccess
 }: StatusChangeButtonProps) {
-  const { data: session } = useSession();
+  const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const [novoStatus, setNovoStatus] = useState<StatusOP | ''>('');
   const [motivo, setMotivo] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const userRole = session?.user?.role as any;
+  const userRole = user?.role as any;
   const statusPossiveis = getStatusPossiveis(statusAtual, userRole);
 
   const handleOpen = () => {
