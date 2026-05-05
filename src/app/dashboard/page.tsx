@@ -1,8 +1,5 @@
 "use client";
 
-// Configurar página como dynamic para build estático
-export const dynamic = 'force-dynamic';
-
 import { Grid, Typography, Box, Paper, Tabs, Tab } from "@mui/material";
 import { useGetIdentity, useIsAuthenticated } from "@refinedev/core";
 import { useRouter } from "next/navigation";

@@ -1,7 +1,6 @@
 "use client";
 
 // Configurar página como dynamic para build estático
-export const dynamic = 'force-dynamic';
 
 import { DataGrid, type GridColDef } from "@mui/x-data-grid";
 import {

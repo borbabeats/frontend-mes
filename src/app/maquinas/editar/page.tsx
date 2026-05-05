@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 
 // Configurar página como dynamic para build estático
-export const dynamic = 'force-dynamic';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth, authClient } from '@/lib/auth-client';
 import {

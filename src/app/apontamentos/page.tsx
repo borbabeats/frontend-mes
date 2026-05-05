@@ -1,7 +1,6 @@
 'use client';
 
 // Configurar página como dynamic para build estático
-export const dynamic = 'force-dynamic';
 
 import { useDataGrid } from "@refinedev/mui";
 import { useList } from "@refinedev/core";

@@ -1,8 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Removido output: "export" para permitir páginas dinâmicas
-  // Usaremos modo standalone para deploy em container serverless
-  output: "standalone",
+  // Configuração para build estático (S3 + CloudFront)
+  output: "export",
   trailingSlash: true,
   images: {
     unoptimized: true,
