@@ -3,8 +3,8 @@
 import { Refine } from "@refinedev/core";
 import { RefineKbar, RefineKbarProvider } from "@refinedev/kbar";
 import { RefineSnackbarProvider, useNotificationProvider } from "@refinedev/mui";
-import { SessionProvider, useSession } from "next-auth/react";
-import { signIn, signOut } from "next-auth/react";
+import { useAuth } from "@/lib/auth-client";
+import { CustomTitle } from "@/components/CustomTitle";
 import { 
   Dashboard, 
   People, 
@@ -25,15 +25,11 @@ type RefineContextProps = {
 };
 
 export const RefineContext = (props: RefineContextProps) => {
-  return (
-    <SessionProvider>
-      <App {...props} />
-    </SessionProvider>
-  );
+  return <App {...props} />;
 };
 
 const App = ({ defaultMode, children }: RefineContextProps) => {
-  const { data: session, status } = useSession();
+  const { user, isLoading: authLoading, login, logout, isAuthenticated } = useAuth();
 
   // Função para filtrar recursos baseado no cargo do usuário
   const getResourcesByRole = (userRole?: string) => {
@@ -147,19 +143,10 @@ const App = ({ defaultMode, children }: RefineContextProps) => {
 
 
   const authProvider = {
-    // Usa o signIn do NextAuth
+    // Usa o login do authClient
     login: async ({ email, senha }: { email: string; senha: string }) => {
       try {
-        const result = await signIn("credentials", {
-          email,
-          senha,
-          redirect: false,
-        });
-
-        if (result?.error) {
-          throw new Error("Credenciais inválidas");
-        }
-
+        await login(email, senha);
         return {
           success: true,
           redirectTo: "/dashboard",
@@ -175,25 +162,25 @@ const App = ({ defaultMode, children }: RefineContextProps) => {
       }
     },
 
-    // Usa o signOut do NextAuth
+    // Usa o logout do authClient
     logout: async () => {
-      await signOut({ redirect: false });
+      logout();
       return {
         success: true,
         redirectTo: "/login",
       };
     },
 
-    // Verifica a autenticação usando a sessão do NextAuth
+    // Verifica a autenticação usando o authClient
     check: async () => {
-      if (status === "loading") {
+      if (authLoading) {
         return {
           authenticated: false,
           loading: true,
         };
       }
 
-      if (status === "unauthenticated") {
+      if (!isAuthenticated) {
         return {
           authenticated: false,
           redirectTo: `/login`,
@@ -205,18 +192,18 @@ const App = ({ defaultMode, children }: RefineContextProps) => {
       };
     },
 
-    // Obtém as permissões do usuário da sessão
+    // Obtém as permissões do usuário
     getPermissions: async () => {
-      if (session?.user?.role) {
-        return [session.user.role];
+      if (user?.role) {
+        return [user.role];
       }
       return null;
     },
 
-    // Obtém a identidade do usuário da sessão
+    // Obtém a identidade do usuário
     getIdentity: async () => {
-      if (session?.user) {
-        const { id, name, image, ...rest } = session.user;
+      if (user) {
+        const { id, name, image, ...rest } = user;
         return {
           ...rest,
           id,
@@ -243,7 +230,7 @@ const App = ({ defaultMode, children }: RefineContextProps) => {
             dataProvider={customDataProvider}
             authProvider={authProvider}
             notificationProvider={useNotificationProvider}
-            resources={getResourcesByRole(session?.user?.role)}
+            resources={getResourcesByRole(user?.role)}
             options={{
               syncWithLocation: true,
               warnWhenUnsavedChanges: true,

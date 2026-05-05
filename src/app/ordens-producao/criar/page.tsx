@@ -1,8 +1,11 @@
 'use client';
 
+// Configurar página como dynamic para build estático
+export const dynamic = 'force-dynamic';
+
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useSession } from 'next-auth/react';
+import { useAuth } from '@/lib/auth-client';
 import {
   Box,
   Typography,
@@ -41,7 +44,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function CriarOrdemProducaoPage() {
   const router = useRouter();
-  const { data: session } = useSession();
+  const { user } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -67,7 +70,7 @@ export default function CriarOrdemProducaoPage() {
     dataInicioPlanejado: '',
     dataFimPlanejado: '',
     setorId: 0,
-    responsavelId: session?.user?.id ? Number(session.user.id) : undefined,
+    responsavelId: user?.id ? Number(user.id) : undefined,
     origemTipo: 'DEMANDA_INTERNA',
     origemId: '',
     observacoes: ''
@@ -128,8 +131,6 @@ export default function CriarOrdemProducaoPage() {
       if (formData.origemTipo) payload.origemTipo = formData.origemTipo;
       if (formData.origemId?.trim()) payload.origemId = formData.origemId;
       if (formData.observacoes?.trim()) payload.observacoes = formData.observacoes;
-
-      console.log('Enviando payload:', payload);
 
       await MESService.ordemProducao.criar(payload);
       

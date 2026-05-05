@@ -8,7 +8,7 @@ import Button from "@mui/material/Button";
 import Container from "@mui/material/Container";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
-import { ThemedTitle } from "@refinedev/mui";
+// import { ThemedTitle } from "@refinedev/mui";
 import FactoryIcon from "@mui/icons-material/Factory";
 
 export default function Login() {
@@ -44,15 +44,21 @@ export default function Login() {
         width="100%"
         maxWidth="400px"
       >
-        <ThemedTitle
-          collapsed={false}
-          text="Sistema MES"
-          icon={<FactoryIcon />}
-          wrapperStyles={{
-            fontSize: "22px",
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
             justifyContent: "center",
+            gap: 1,
+            fontSize: "22px",
+            mb: 2,
           }}
-        />
+        >
+          <FactoryIcon sx={{ fontSize: 28 }} />
+          <Typography variant="h5" component="h1">
+            Sistema MES
+          </Typography>
+        </Box>
         
         <TextField
           label="Email"

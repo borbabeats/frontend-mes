@@ -6,14 +6,13 @@
     "node": ">=20"
   },
   "scripts": {
-    "dev": "cross-env NODE_OPTIONS=--max_old_space_size=4096 refine dev",
+    "dev": "cross-env NODE_OPTIONS=--max_old_space_size=4096 PORT=3003 refine dev",
     "build": "refine build",
     "start": "refine start",
     "lint": "next lint",
     "refine": "refine"
   },
   "dependencies": {
-    "@auth/core": "^0.34.3",
     "@emotion/react": "^11.8.2",
     "@emotion/styled": "^11.8.1",
     "@hookform/resolvers": "^5.2.2",
@@ -25,14 +24,13 @@
     "@refinedev/core": "^5.0.8",
     "@refinedev/devtools": "^2.0.1",
     "@refinedev/kbar": "^2.0.0",
-    "@refinedev/mui": "^7.0.0",
+    "@refinedev/mui": "^8.0.2",
     "@refinedev/nextjs-router": "^7.0.0",
     "@refinedev/react-hook-form": "^5.0.0",
     "@refinedev/simple-rest": "^6.0.0",
     "axios": "^1.13.2",
     "js-cookie": "^3.0.5",
     "next": "^15.2.4",
-    "next-auth": "^4.24.13",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "recharts": "^3.8.1",

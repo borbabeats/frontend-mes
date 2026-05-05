@@ -1,5 +1,8 @@
 "use client";
 
+// Configurar página como dynamic para build estático
+export const dynamic = 'force-dynamic';
+
 import { Box, TextField, FormControl, InputLabel, Select, MenuItem, FormHelperText } from "@mui/material";
 import { Create } from "@refinedev/mui";
 import { useForm } from "@refinedev/react-hook-form";

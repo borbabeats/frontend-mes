@@ -1,5 +1,8 @@
 "use client";
 
+// Configurar página como dynamic para build estático
+export const dynamic = 'force-dynamic';
+
 import { DataGrid, type GridColDef } from "@mui/x-data-grid";
 import {
   DeleteButton,
@@ -89,7 +92,12 @@ export default function SetoresList() {
         message="Carregando..."
         subMessage="Buscando dados da API"
       />
-      <DataGrid {...dataGridProps} columns={columns} />
+      <DataGrid 
+        rows={dataGridProps.rows || []}
+        columns={columns}
+        loading={dataGridProps.loading}
+        getRowId={(row) => row.id}
+      />
     </List>
   );
 }
