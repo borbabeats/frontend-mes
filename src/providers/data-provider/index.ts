@@ -114,6 +114,22 @@ axiosInstance.interceptors.response.use(
   }
 );
 
+// Função para construir URL com prefixo /api quando necessário
+const buildApiUrl = (resource: string, includeApiPrefix: boolean = true): string => {
+  const resourceMapping: Record<string, string> = {
+    'usuarios': 'usuarios',
+    'maquinas': 'maquinas',
+    'setores': 'setores',
+    'apontamentos': 'apontamentos',
+    'ordens-producao': 'ordens-producao',
+    'manutencoes': 'manutencoes',
+  };
+  
+  const mappedResource = resourceMapping[resource] || resource;
+  const prefix = includeApiPrefix ? '/api' : '';
+  return `${API_URL}${prefix}/${mappedResource}`;
+};
+
 // Data provider customizado para padrão RESTful
 export const customDataProvider: DataProvider = {
   getApiUrl: () => API_URL || '',
@@ -187,18 +203,8 @@ export const customDataProvider: DataProvider = {
         }
       });
     }
-
-    // Mapeamento de recursos para endpoints
-    const resourceMapping: Record<string, string> = {
-      'usuarios': 'usuarios',
-      'maquinas': 'maquinas',
-      'setores': 'setores',
-      'apontamentos': 'apontamentos',
-      'ordens-producao': 'ordens-producao',
-    };
     
-    const mappedResource = resourceMapping[resource] || resource;
-    const url = `${API_URL}/${mappedResource}`;
+    const url = buildApiUrl(resource);
 
     try {
       const response = await axiosInstance.get(url, { params });
@@ -242,16 +248,7 @@ export const customDataProvider: DataProvider = {
   },
 
   getOne: async ({ resource, id, meta }) => {
-    const resourceMapping: Record<string, string> = {
-      'usuarios': 'usuarios',
-      'maquinas': 'maquinas',
-      'setores': 'setores',
-      'apontamentos': 'apontamentos',
-      'ordens-producao': 'ordens-producao',
-    };
-    
-    const mappedResource = resourceMapping[resource] || resource;
-    const url = `${API_URL}/${mappedResource}/${id}`;
+    const url = buildApiUrl(resource) + `/${id}`;
     
     try {
       const response = await axiosInstance.get(url);
@@ -265,16 +262,7 @@ export const customDataProvider: DataProvider = {
   },
 
   create: async ({ resource, variables, meta }) => {
-    const resourceMapping: Record<string, string> = {
-      'usuarios': 'usuarios',
-      'maquinas': 'maquinas',
-      'setores': 'setores',
-      'apontamentos': 'apontamentos',
-      'ordens-producao': 'ordens-producao',
-    };
-    
-    const mappedResource = resourceMapping[resource] || resource;
-    const url = `${API_URL}/${mappedResource}`;
+    const url = buildApiUrl(resource);
     
     // Normalizar datas para formato ISO-8601
     const normalizedVariables = normalizeDatesInObject(variables);
@@ -291,16 +279,7 @@ export const customDataProvider: DataProvider = {
   },
 
   update: async ({ resource, id, variables, meta }) => {
-    const resourceMapping: Record<string, string> = {
-      'usuarios': 'usuarios',
-      'maquinas': 'maquinas',
-      'setores': 'setores',
-      'apontamentos': 'apontamentos',
-      'ordens-producao': 'ordens-producao',
-    };
-    
-    const mappedResource = resourceMapping[resource] || resource;
-    const url = `${API_URL}/${mappedResource}/${id}`;
+    const url = buildApiUrl(resource) + `/${id}`;
     
     // Normalizar datas para formato ISO-8601
     const normalizedVariables = normalizeDatesInObject(variables);
@@ -317,16 +296,7 @@ export const customDataProvider: DataProvider = {
   },
 
   deleteOne: async ({ resource, id, meta }) => {
-    const resourceMapping: Record<string, string> = {
-      'usuarios': 'usuarios',
-      'maquinas': 'maquinas',
-      'setores': 'setores',
-      'apontamentos': 'apontamentos',
-      'ordens-producao': 'ordens-producao',
-    };
-    
-    const mappedResource = resourceMapping[resource] || resource;
-    const url = `${API_URL}/${mappedResource}/${id}`;
+    const url = buildApiUrl(resource) + `/${id}`;
     
     try {
       await axiosInstance.delete(url);
