@@ -6,6 +6,9 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
+  // Configurar base path para assets funcionarem no S3
+  basePath: '',
+  assetPrefix: '',
 };
 
 export default nextConfig;

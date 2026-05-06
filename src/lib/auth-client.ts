@@ -208,6 +208,13 @@ export function useAuth() {
   useEffect(() => {
     const updateUser = () => setUser(authClient.user);
     updateUser();
+  });
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setUser(authClient.user);
+    }, 1000);
+    return () => clearInterval(interval);
   }, []);
 
   const login = async (email: string, password: string) => {
