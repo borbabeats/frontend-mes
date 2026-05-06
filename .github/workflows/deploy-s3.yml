@@ -63,17 +63,7 @@ jobs:
           echo "✅ Files uploaded to S3"
       
       - name: Invalidate CloudFront cache
-        run: |
-          cat > invalidation.json << EOF
-          {
-            "Paths": {
-              "Quantity": 1,
-              "Items": ["/*"]
-            },
-            "CallerReference": "deploy-$(date +%s)"
-          }
-          EOF
-          aws cloudfront create-invalidation --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} --invalidation-batch file://invalidation.json
+        run: echo "⚠️ CloudFront invalidation temporarily disabled - will be re-enabled after deployment is stable"
 
   health-check:
     needs: deploy-s3
