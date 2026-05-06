@@ -66,12 +66,7 @@ jobs:
         run: |
           aws cloudfront create-invalidation \
             --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} \
-            --paths "/*" \
-            --query 'Invalidation.Id' \
-            --output text \
-            --no-cli-pager
-        env:
-          AWS_REGION: us-east-1
+            --paths "/*"
 
   health-check:
     needs: deploy-s3
