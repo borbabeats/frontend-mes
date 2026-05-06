@@ -66,10 +66,12 @@ jobs:
         run: |
           aws cloudfront create-invalidation \
             --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} \
-            --invalidation-batch Paths={Quantity=1,Items=[{Key=/\*}]} \
-            --caller-reference $(date +%s) \
-            --query 'Invalidation.Id'
-          echo "✅ CloudFront cache invalidated"
+            --paths "/*" \
+            --query 'Invalidation.Id' \
+            --output text \
+            --no-cli-pager
+        env:
+          AWS_REGION: us-east-1
 
   health-check:
     needs: deploy-s3
