@@ -122,7 +122,7 @@ class AuthManager implements AuthClient {
     this._isLoading = true;
 
     try {
-      const response = await axios.post(`${this.API_URL}/api/auth/login`, {
+      const response = await axios.post(`${this.API_URL}/auth/login`, {
         email,
         senha: password,
       }, {
@@ -168,7 +168,7 @@ class AuthManager implements AuthClient {
 
     try {
       // Verificar se o token ainda é válido fazendo uma requisição simples
-      const response = await axios.get(`${this.API_URL}/api/auth/me`, {
+      const response = await axios.get(`${this.API_URL}/auth/me`, {
         headers: {
           Authorization: `Bearer ${this._token}`,
         },

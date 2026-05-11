@@ -115,7 +115,7 @@ axiosInstance.interceptors.response.use(
 );
 
 // Função para construir URL com prefixo /api quando necessário
-const buildApiUrl = (resource: string, includeApiPrefix: boolean = true): string => {
+const buildApiUrl = (resource: string, includeApiPrefix: boolean = false): string => {
   const resourceMapping: Record<string, string> = {
     'usuarios': 'usuarios',
     'maquinas': 'maquinas',
