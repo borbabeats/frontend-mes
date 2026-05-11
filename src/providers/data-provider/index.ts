@@ -6,11 +6,6 @@ import type { DataProvider } from "@refinedev/core";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-// Cache simples para o token
-let cachedToken: string | null = null;
-let tokenCacheTime = 0;
-const TOKEN_CACHE_DURATION = 30000; // 30 segundos
-
 // Função para normalizar datas para formato esperado pela API: YYYY-MM-DDTHH:MM
 const normalizeDate = (dateValue: any): string | null => {
   if (!dateValue) return null;
@@ -72,26 +67,23 @@ const axiosInstance = axios.create({
   withCredentials: true,
 });
 
-// Função otimizada para obter token com cache
-const getCachedToken = async () => {
-  const now = Date.now();
-  
-  // Se tiver cache válido, retorna do cache
-  if (cachedToken && (now - tokenCacheTime) < TOKEN_CACHE_DURATION) {
-    return cachedToken;
-  }
-  
-  // Senão, busca novo token do authClient
+// Função simplificada para obter token (igual ao mesService.ts)
+const getToken = () => {
   const token = authClient.token;
-  cachedToken = token;
-  tokenCacheTime = now;
+  
+  // Debug: verificar se o token está sendo encontrado
+  console.log('Token obtido do authClient:', token ? 'SIM' : 'NÃO');
   
   return token;
 };
 
 // Adiciona o token de autenticação a todas as requisições
-axiosInstance.interceptors.request.use(async (config) => {
-  const token = await getCachedToken();
+axiosInstance.interceptors.request.use((config) => {
+  const token = getToken();
+  
+  // Debug: mostrar se o token está sendo adicionado
+  console.log('Token adicionado ao header:', token ? 'SIM' : 'NÃO');
+  console.log('URL da requisição:', config.url);
   
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
