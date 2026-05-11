@@ -11,7 +11,18 @@ const api = axios.create({
 });
 
 api.interceptors.request.use(async (config) => {
-  const token = authClient.token;
+  let token = authClient.token;
+  
+  // Fallback: tentar obter diretamente do localStorage se authClient não tiver token
+  if (!token && typeof window !== 'undefined') {
+    token = localStorage.getItem('auth_token');
+    console.log('[MES SERVICE] Token obtido do localStorage (fallback):', token ? 'SIM' : 'NÃO');
+  }
+  
+  // Debug: verificar se o token está sendo encontrado
+  console.log('[MES SERVICE] Token obtido do authClient:', authClient.token ? 'SIM' : 'NÃO');
+  console.log('[MES SERVICE] URL da requisição:', config.url);
+  console.log('[MES SERVICE] Token adicionado ao header:', token ? 'SIM' : 'NÃO');
   
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;

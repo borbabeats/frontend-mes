@@ -1,7 +1,6 @@
 "use client";
 
-import { authClient } from "@/lib/auth-client";
-import axios from "axios";
+import { api } from "@/services/mesService";
 import type { DataProvider } from "@refinedev/core";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -60,54 +59,9 @@ const normalizeDatesInObject = (obj: any): any => {
   return normalized;
 };
 
-const axiosInstance = axios.create({
-  headers: {
-    "Content-Type": "application/json",
-  },
-  withCredentials: true,
-});
 
-// Função simplificada para obter token (igual ao mesService.ts)
-const getToken = () => {
-  const token = authClient.token;
-  
-  // Debug: verificar se o token está sendo encontrado
-  console.log('Token obtido do authClient:', token ? 'SIM' : 'NÃO');
-  
-  return token;
-};
-
-// Adiciona o token de autenticação a todas as requisições
-axiosInstance.interceptors.request.use((config) => {
-  const token = getToken();
-  
-  // Debug: mostrar se o token está sendo adicionado
-  console.log('Token adicionado ao header:', token ? 'SIM' : 'NÃO');
-  console.log('URL da requisição:', config.url);
-  
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  
-  return config;
-});
-
-// Adiciona tratamento de erros
-axiosInstance.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      window.location.href = '/login';
-    }
-    if (error.response?.data?.message) {
-      console.error('Erro da API:', error.response.data.message);
-    }
-    return Promise.reject(error);
-  }
-);
-
-// Função para construir URL com prefixo /api quando necessário
-const buildApiUrl = (resource: string, includeApiPrefix: boolean = false): string => {
+// Função para construir URL (não adiciona /api pois a instância api já tem baseURL=/api)
+const buildApiUrl = (resource: string): string => {
   const resourceMapping: Record<string, string> = {
     'usuarios': 'usuarios',
     'maquinas': 'maquinas',
@@ -118,8 +72,7 @@ const buildApiUrl = (resource: string, includeApiPrefix: boolean = false): strin
   };
   
   const mappedResource = resourceMapping[resource] || resource;
-  const prefix = includeApiPrefix ? '/api' : '';
-  return `${API_URL}${prefix}/${mappedResource}`;
+  return `/${mappedResource}`;
 };
 
 // Data provider customizado para padrão RESTful
@@ -199,7 +152,7 @@ export const customDataProvider: DataProvider = {
     const url = buildApiUrl(resource);
 
     try {
-      const response = await axiosInstance.get(url, { params });
+      const response = await api.get(url, { params });
       
       // Extrair dados da resposta no formato esperado pelo Refine
       let responseData = Array.isArray(response.data) ? response.data : response.data.data ?? response.data.items ?? [];
@@ -243,7 +196,7 @@ export const customDataProvider: DataProvider = {
     const url = buildApiUrl(resource) + `/${id}`;
     
     try {
-      const response = await axiosInstance.get(url);
+      const response = await api.get(url);
       return { data: response.data };
     } catch (error: any) {
       if (error.response?.data?.message) {
@@ -260,7 +213,7 @@ export const customDataProvider: DataProvider = {
     const normalizedVariables = normalizeDatesInObject(variables);
     
     try {
-      const response = await axiosInstance.post(url, normalizedVariables);
+      const response = await api.post(url, normalizedVariables);
       return { data: response.data };
     } catch (error: any) {
       if (error.response?.data?.message) {
@@ -277,7 +230,7 @@ export const customDataProvider: DataProvider = {
     const normalizedVariables = normalizeDatesInObject(variables);
     
     try {
-      const response = await axiosInstance.put(url, normalizedVariables);
+      const response = await api.put(url, normalizedVariables);
       return { data: response.data };
     } catch (error: any) {
       if (error.response?.data?.message) {
@@ -291,7 +244,7 @@ export const customDataProvider: DataProvider = {
     const url = buildApiUrl(resource) + `/${id}`;
     
     try {
-      await axiosInstance.delete(url);
+      await api.delete(url);
       return { data: {} as any };
     } catch (error: any) {
       if (error.response?.data?.message) {
@@ -304,7 +257,7 @@ export const customDataProvider: DataProvider = {
   // Métodos customizados se necessário
   custom: async ({ url, method, payload, query, headers, meta }) => {
     try {
-      const response = await axiosInstance({
+      const response = await api({
         url: `${API_URL}${url}`,
         method,
         data: payload,
@@ -323,4 +276,4 @@ export const customDataProvider: DataProvider = {
 };
 
 // Exportações para uso externo
-export { axiosInstance, API_URL };
+export { API_URL };
