@@ -97,9 +97,18 @@ export default function StatusChangeButton({
       await MESService.ordemProducao.alterarStatus(ordemId, novoStatus, motivo.trim());
       handleClose();
       onSuccess?.();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao alterar status:', error);
-      setError(error instanceof Error ? error.message : 'Erro ao alterar status');
+      // Priorizar a mensagem de erro do backend
+      if (error.response?.data?.message) {
+        setError(error.response.data.message);
+      } else if (error.response?.data?.error) {
+        setError(error.response.data.error);
+      } else if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError('Erro ao alterar status');
+      }
     } finally {
       setLoading(false);
     }

@@ -27,7 +27,7 @@ export default function MaquinaCreate() {
     <Create isLoading={formLoading} saveButtonProps={saveButtonProps}>
       <Box
         component="form"
-        sx={{ display: "flex", flexDirection: "column" }}
+        sx={{ display: "grid", gap: 2, gridTemplateColumns: "1fr 1fr" }}
         autoComplete="off"
       >
         <TextField
@@ -39,6 +39,7 @@ export default function MaquinaCreate() {
           type="text"
           label="Código"
           name="codigo"
+          
         />
         
         <TextField

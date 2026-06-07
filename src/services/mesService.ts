@@ -5,29 +5,19 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const api = axios.create({
   baseURL: API_URL,
+  timeout: 15000,
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-api.interceptors.request.use(async (config) => {
-  let token = authClient.token;
-  
-  // Fallback: tentar obter diretamente do localStorage se authClient não tiver token
-  if (!token && typeof window !== 'undefined') {
-    token = localStorage.getItem('auth_token');
-    console.log('[MES SERVICE] Token obtido do localStorage (fallback):', token ? 'SIM' : 'NÃO');
-  }
-  
-  // Debug: verificar se o token está sendo encontrado
-  console.log('[MES SERVICE] Token obtido do authClient:', authClient.token ? 'SIM' : 'NÃO');
-  console.log('[MES SERVICE] URL da requisição:', config.url);
-  console.log('[MES SERVICE] Token adicionado ao header:', token ? 'SIM' : 'NÃO');
-  
+api.interceptors.request.use((config) => {
+  const token = authClient.token ?? (typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null);
+
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
-  
+
   return config;
 });
 
@@ -35,7 +25,12 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      window.location.href = '/login';
+      // Só redireciona para login se não for uma ação específica (status, finalize, etc)
+      const url: string = error.config?.url ?? '';
+      const isActionUrl = /\/(status|finalize|atualizar-producao)/.test(url);
+      if (!isActionUrl) {
+        window.location.href = '/login';
+      }
     }
     if (error.response?.data?.message) {
       console.error('Erro da API:', error.response.data.message);

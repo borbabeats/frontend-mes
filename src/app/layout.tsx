@@ -3,6 +3,7 @@
 import React, { Suspense, useEffect, useState } from "react";
 import { RefineContext } from "./_refine_context";
 import { GlobalLoading } from "@/components/GlobalLoading";
+import { SocketProvider } from "@/providers/socket";
 
 export default function RootLayout({
   children,
@@ -25,7 +26,11 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <Suspense>
-          <RefineContext defaultMode={isClient ? defaultMode : "light"}>{children}</RefineContext>
+          <SocketProvider>
+            <RefineContext defaultMode={isClient ? defaultMode : "light"}>
+              {children}
+            </RefineContext>
+          </SocketProvider>
           <GlobalLoading />
         </Suspense>
       </body>
