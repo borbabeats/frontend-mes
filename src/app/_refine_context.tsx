@@ -18,6 +18,12 @@ import { ColorModeContextProvider } from "@contexts/color-mode";
 
 import routerProvider from "@refinedev/nextjs-router";
 import { customDataProvider } from "../providers/data-provider";
+import { useSocketInvalidation } from "@/hooks/useSocketInvalidation";
+
+function SocketInvalidation() {
+  useSocketInvalidation();
+  return null;
+}
 
 type RefineContextProps = {
   defaultMode?: string;
@@ -56,7 +62,7 @@ const App = ({ defaultMode, children }: RefineContextProps) => {
       {
         name: "ordens-producao",
         list: "/ordens-producao",
-        show: "/ordens-producao/:id",
+        show: "/ordens-producao",
         create: "/ordens-producao/criar",
         edit: "/ordens-producao/editar/:id",
         meta: {
@@ -239,18 +245,20 @@ const App = ({ defaultMode, children }: RefineContextProps) => {
                 clientConfig: {
                   defaultOptions: {
                     queries: {
-                      staleTime: 30 * 1000, // 30 segundos (reduzido de 5 minutos)
-                      gcTime: 5 * 60 * 1000, // 5 minutos em cache (gcTime substituiu cacheTime)
-                      retry: 2,
-                      retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
+                      staleTime: 5 * 60 * 1000,
+                      gcTime: 30 * 60 * 1000,
+                      retry: 1,
+                      retryDelay: 1000,
                       refetchOnWindowFocus: false,
                       refetchOnReconnect: true,
+                      placeholderData: (prev: any) => prev,
                     },
                   },
                 },
               },
             }}
           >
+            <SocketInvalidation />
             {children}
             <RefineKbar />
           </Refine>

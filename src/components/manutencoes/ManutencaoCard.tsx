@@ -52,7 +52,7 @@ interface Manutencao {
 
 interface ManutencaoCardProps {
   manutencao: Manutencao;
-  onVerDetalhes: (id: number) => void;
+  // onVerDetalhes: (id: number) => void;
   onEditar: (id: number) => void;
   onCancelar?: (manutencao: Manutencao) => void;
 }
@@ -75,7 +75,7 @@ const statusLabels: Record<StatusManutencao, string> = {
 
 export const ManutencaoCard: React.FC<ManutencaoCardProps> = ({
   manutencao,
-  onVerDetalhes,
+  // onVerDetalhes,
   onEditar,
   onCancelar,
 }) => {
@@ -230,14 +230,14 @@ export const ManutencaoCard: React.FC<ManutencaoCardProps> = ({
         <Divider sx={{ my: 2 }} />
 
         <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
-          <Button
+          {/* <Button
             size="small"
             variant="outlined"
             startIcon={<Visibility />}
             onClick={() => onVerDetalhes(manutencao.id)}
           >
             Ver Detalhes
-          </Button>
+          </Button> */}
           {(manutencao.status === 'AGENDADA' || manutencao.status === 'EM_ANDAMENTO') && (
             <Button
               size="small"

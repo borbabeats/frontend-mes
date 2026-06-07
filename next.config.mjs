@@ -1,12 +1,13 @@
 /** @type {import('next').NextConfig} */
+const isProd = process.env.NODE_ENV === "production";
+
 const nextConfig = {
-  // Configuração para build estático (S3 + CloudFront)
-  output: "export",
+  // output: export apenas no build de produção (S3 + CloudFront)
+  ...(isProd && { output: "export" }),
   trailingSlash: true,
   images: {
     unoptimized: true,
   },
-  // Configurar base path para assets funcionarem no S3
   basePath: '',
   assetPrefix: '',
 };

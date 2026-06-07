@@ -364,7 +364,7 @@ export default function ManutencoesPage() {
                     <ManutencaoCard
                         key={manutencao.id}
                         manutencao={manutencao}
-                        onVerDetalhes={handleVerDetalhes}
+                        // onVerDetalhes={handleVerDetalhes}
                         onEditar={handleEditar}
                         onCancelar={handleCancelar}
                     />
