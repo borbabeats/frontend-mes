@@ -1,6 +1,19 @@
 export type StatusOP = "RASCUNHO" | "PLANEJADA" | "EM_ANDAMENTO" | "PAUSADA" | "FINALIZADA" | "CANCELADA" | "ATRASADA";
 export type UserRole = "ADMIN" | "GERENTE" | "OPERADOR" | "PLANEJAMENTO";
 
+const STATUS_OP_VALIDOS: StatusOP[] = ["RASCUNHO", "PLANEJADA", "EM_ANDAMENTO", "PAUSADA", "FINALIZADA", "CANCELADA", "ATRASADA"];
+const USER_ROLES_VALIDAS: UserRole[] = ["ADMIN", "GERENTE", "OPERADOR", "PLANEJAMENTO"];
+
+// Type guard: valida em runtime se um valor desconhecido (ex.: vindo da API) é um UserRole
+// conhecido, evitando casts "as any"/"as UserRole" que mascaram valores inválidos.
+export const isUserRole = (value: unknown): value is UserRole =>
+  typeof value === "string" && (USER_ROLES_VALIDAS as string[]).includes(value);
+
+// Type guard: valida em runtime se um valor desconhecido (ex.: vindo da API) é um StatusOP
+// conhecido, evitando casts "as any"/"as StatusOP" que mascaram valores inválidos.
+export const isStatusOP = (value: unknown): value is StatusOP =>
+  typeof value === "string" && (STATUS_OP_VALIDOS as string[]).includes(value);
+
 interface TransicaoStatus {
   de: StatusOP;
   para: StatusOP;

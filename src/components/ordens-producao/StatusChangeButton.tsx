@@ -24,7 +24,8 @@ import {
   formatarStatusOP, 
   getStatusOPColor, 
   verificarTransicaoPermitida, 
-  getStatusPossiveis 
+  getStatusPossiveis,
+  isUserRole,
 } from '@/utils/ordemProducaoStatus';
 import { MESService } from '@/services/mesService';
 
@@ -50,8 +51,8 @@ export default function StatusChangeButton({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const userRole = user?.role as any;
-  const statusPossiveis = getStatusPossiveis(statusAtual, userRole);
+  const userRole = user?.role;
+  const statusPossiveis = isUserRole(userRole) ? getStatusPossiveis(statusAtual, userRole) : [];
 
   const handleOpen = () => {
     setOpen(true);
@@ -75,6 +76,11 @@ export default function StatusChangeButton({
 
     if (!motivo.trim()) {
       setError('O motivo é obrigatório');
+      return;
+    }
+
+    if (!isUserRole(userRole)) {
+      setError('Não foi possível determinar a permissão do usuário');
       return;
     }
 

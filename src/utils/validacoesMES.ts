@@ -39,7 +39,9 @@ export const ValidacoesOP = {
       return { valido: false, mensagem: 'Data fim planejada deve ser posterior à data início', tipo: 'erro' };
     }
 
-    if (dataInicio < new Date()) {
+    const inicioHoje = new Date();
+    inicioHoje.setHours(0, 0, 0, 0);
+    if (dataInicio < inicioHoje) {
       return { valido: false, mensagem: 'Data início planejada não pode ser no passado', tipo: 'erro' };
     }
 
@@ -239,8 +241,8 @@ export const executarValidacoes = (validacoes: ValidacaoResultado[]): ValidacaoR
   const erro = validacoes.find(v => !v.valido && v.tipo === 'erro');
   if (erro) return erro;
 
-  // Encontrar primeiro aviso
-  const aviso = validacoes.find(v => !v.valido && v.tipo === 'aviso');
+  // Encontrar primeiro aviso (avisos são retornados com valido: true, então não filtramos por !v.valido)
+  const aviso = validacoes.find(v => v.tipo === 'aviso');
   if (aviso) return aviso;
 
   // Retornar primeira validação se todas forem válidas

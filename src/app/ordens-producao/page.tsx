@@ -44,7 +44,8 @@ import {
   formatarStatusOP, 
   getStatusOPColor, 
   verificarOPAtrasada, 
-  calcularProgressoOP 
+  calcularProgressoOP,
+  isStatusOP,
 } from '@utils/ordemProducaoStatus';
 import { useRouter } from 'next/navigation';
 import { LoadingOverlay } from '@/components/LoadingOverlay';
@@ -201,7 +202,7 @@ export default function OrdensProducaoPage() {
 
       {ordensData?.map((ordem) => {
         const progresso = calcularProgressoOP(ordem.quantidadeProduzida, ordem.quantidadePlanejada);
-        const estaAtrasada = verificarOPAtrasada(ordem.dataFimPlanejado, ordem.status as any);
+        const estaAtrasada = isStatusOP(ordem.status) && verificarOPAtrasada(ordem.dataFimPlanejado, ordem.status);
         const statusExibicao = estaAtrasada ? 'ATRASADA' : ordem.status;
         
         return (
