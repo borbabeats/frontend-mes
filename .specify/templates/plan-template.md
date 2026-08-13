@@ -4,7 +4,7 @@
 
 **Input**: Feature specification from `/specs/[###-feature-name]/spec.md`
 
-**Note**: This template is filled in by the `/speckit.plan` command. See `.specify/templates/plan-template.md` for the execution workflow.
+**Note**: This template is filled in by the `/speckit.plan` command; its definition describes the execution workflow.
 
 ## Summary
 
@@ -18,23 +18,23 @@
   the iteration process.
 -->
 
-**Language/Version**: [e.g., Python 3.11, Swift 5.9, Rust 1.75 or NEEDS CLARIFICATION]
+**Language/Version**: [e.g., TypeScript 5.8 / Next.js 15 (App Router) or NEEDS CLARIFICATION]
 
-**Primary Dependencies**: [e.g., FastAPI, UIKit, LLVM or NEEDS CLARIFICATION]
+**Primary Dependencies**: [e.g., Refine 5, Material-UI 6, React Hook Form + Zod, Axios, Recharts or NEEDS CLARIFICATION]
 
-**Storage**: [if applicable, e.g., PostgreSQL, CoreData, files or N/A]
+**Storage**: [N/A for this frontend — data is persisted via the backend REST API, not locally]
 
-**Testing**: [e.g., pytest, XCTest, cargo test or NEEDS CLARIFICATION]
+**Testing**: [e.g., Jest/React Testing Library, Playwright or NEEDS CLARIFICATION]
 
-**Target Platform**: [e.g., Linux server, iOS 15+, WASM or NEEDS CLARIFICATION]
+**Target Platform**: [Static site exported for AWS S3 hosting, served via CDN, running in modern browsers]
 
-**Project Type**: [e.g., library/cli/web-service/mobile-app/compiler/desktop-app or NEEDS CLARIFICATION]
+**Project Type**: [web frontend consuming a separate Node.js/Express REST API]
 
-**Performance Goals**: [domain-specific, e.g., 1000 req/s, 10k lines/sec, 60 fps or NEEDS CLARIFICATION]
+**Performance Goals**: [domain-specific, e.g., dashboard KPIs render within 1s of data arrival, apontamento form submits in <500ms or NEEDS CLARIFICATION]
 
-**Constraints**: [domain-specific, e.g., <200ms p95, <100MB memory, offline-capable or NEEDS CLARIFICATION]
+**Constraints**: [MUST remain statically exportable — no SSR/server actions/dynamic API routes; all data fetching is client-side]
 
-**Scale/Scope**: [domain-specific, e.g., 10k users, 1M LOC, 50 screens or NEEDS CLARIFICATION]
+**Scale/Scope**: [domain-specific, e.g., number of concurrent operators, machines, sectors affected or NEEDS CLARIFICATION]
 
 ## Constitution Check
 
@@ -58,50 +58,25 @@ specs/[###-feature]/
 
 ### Source Code (repository root)
 <!--
-  ACTION REQUIRED: Replace the placeholder tree below with the concrete layout
-  for this feature. Delete unused options and expand the chosen structure with
-  real paths (e.g., apps/admin, packages/something). The delivered plan must
-  not include Option labels.
+  ACTION REQUIRED: Confirm the feature fits the existing structure below.
+  Only add new top-level folders if the feature genuinely requires it —
+  prefer extending the existing tree.
 -->
 
 ```text
-# [REMOVE IF UNUSED] Option 1: Single project (DEFAULT)
 src/
-├── models/
-├── services/
-├── cli/
-└── lib/
-
-tests/
-├── contract/
-├── integration/
-└── unit/
-
-# [REMOVE IF UNUSED] Option 2: Web application (when "frontend" + "backend" detected)
-backend/
-├── src/
-│   ├── models/
-│   ├── services/
-│   └── api/
-└── tests/
-
-frontend/
-├── src/
-│   ├── components/
-│   ├── pages/
-│   └── services/
-└── tests/
-
-# [REMOVE IF UNUSED] Option 3: Mobile + API (when "iOS/Android" detected)
-api/
-└── [same as backend above]
-
-ios/ or android/
-└── [platform-specific structure: feature modules, UI flows, platform tests]
+├── app/                    # Next.js App Router pages (dashboard, apontamentos, ordens-producao, maquinas, setores, manutencoes, usuarios)
+├── components/             # Reusable UI components (e.g., components/dashboard/)
+├── services/               # API service layer (Axios calls to the backend)
+├── providers/              # Refine providers and app-level context
+├── utils/                  # Shared utility/helper functions
+├── validations/            # Zod schemas for forms
+├── types/                  # TypeScript type definitions
+└── interfaces/             # Interfaces and contracts
 ```
 
-**Structure Decision**: [Document the selected structure and reference the real
-directories captured above]
+**Structure Decision**: [Confirm the feature uses the existing folders above,
+listing the specific new files/subfolders to be added under each]
 
 ## Complexity Tracking
 

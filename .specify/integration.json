@@ -1,15 +1,19 @@
 {
-  "version": "0.8.10.dev0",
+  "version": "0.16.2",
   "integration_state_schema": 1,
   "installed_integrations": [
-    "windsurf"
+    "generic"
   ],
   "integration_settings": {
-    "windsurf": {
+    "generic": {
       "script": "sh",
+      "raw_options": "--commands-dir .devin/workflows",
+      "parsed_options": {
+        "commands_dir": ".devin/workflows"
+      },
       "invoke_separator": "."
     }
   },
-  "integration": "windsurf",
-  "default_integration": "windsurf"
+  "integration": "generic",
+  "default_integration": "generic"
 }

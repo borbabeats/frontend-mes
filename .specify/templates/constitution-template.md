@@ -4,29 +4,29 @@
 ## Core Principles
 
 ### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
+<!-- Example: I. Production Data Accuracy -->
 [PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+<!-- Example: KPI calculations (OEE, efficiency, defect rate) and OP status transitions MUST match the documented formulas/state machine exactly; discrepancies between dashboard and backend data are treated as bugs, not edge cases -->
 
 ### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
+<!-- Example: II. Role-Based Access Control -->
 [PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+<!-- Example: Every screen and action MUST enforce the correct role (ADMIN, GERENTE, OPERADOR, PLANEJAMENTO); UI MUST hide/disable actions a role cannot perform, not just block them server-side -->
 
 ### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
+<!-- Example: III. Static-Export Compatibility (NON-NEGOTIABLE) -->
 [PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+<!-- Example: All pages MUST remain compatible with static export for AWS S3 hosting; no SSR, server actions, or dynamic server-side routes are permitted -->
 
 ### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
+<!-- Example: IV. Type Safety -->
 [PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+<!-- Example: All API responses and form inputs MUST be typed with TypeScript and validated with Zod before use; no `any` on data crossing the service layer -->
 
 ### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
+<!-- Example: V. Shop-Floor Usability -->
 [PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+<!-- Example: Operator-facing flows (e.g., apontamentos) MUST be completable in a few taps/clicks on shared shop-floor devices; error messages MUST be clear and actionable -->
 
 ## [SECTION_2_NAME]
 <!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->

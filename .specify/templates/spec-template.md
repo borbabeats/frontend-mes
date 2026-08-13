@@ -25,15 +25,15 @@
 
 ### User Story 1 - [Brief Title] (Priority: P1)
 
-[Describe this user journey in plain language]
+[Describe this user journey in plain language. MES example: "As an Operador, I want to record an apontamento for the machine I'm running so that production quantities are tracked in real time."]
 
 **Why this priority**: [Explain the value and why it has this priority level]
 
-**Independent Test**: [Describe how this can be tested independently - e.g., "Can be fully tested by [specific action] and delivers [specific value]"]
+**Independent Test**: [Describe how this can be tested independently - e.g., "Can be fully tested by an Operador starting and finalizing an apontamento on an active OP and delivers accurate production/defect counts"]
 
 **Acceptance Scenarios**:
 
-1. **Given** [initial state], **When** [action], **Then** [expected outcome]
+1. **Given** [initial state, e.g., "an OP is EM_ANDAMENTO and a machine is available"], **When** [action, e.g., "the operator starts an apontamento"], **Then** [expected outcome, e.g., "the apontamento is created with status EM ANDAMENTO and linked to the logged-in operator"]
 2. **Given** [initial state], **When** [action], **Then** [expected outcome]
 
 ---
@@ -75,8 +75,8 @@
   Fill them out with the right edge cases.
 -->
 
-- What happens when [boundary condition]?
-- How does system handle [error scenario]?
+- What happens when [boundary condition, e.g., "a machine already has an apontamento EM ANDAMENTO and a second one is started"]?
+- How does system handle [error scenario, e.g., "defect quantity exceeds produced quantity, or the API/backend is unreachable"]?
 
 ## Requirements *(mandatory)*
 
@@ -87,11 +87,11 @@
 
 ### Functional Requirements
 
-- **FR-001**: System MUST [specific capability, e.g., "allow users to create accounts"]
-- **FR-002**: System MUST [specific capability, e.g., "validate email addresses"]
-- **FR-003**: Users MUST be able to [key interaction, e.g., "reset their password"]
-- **FR-004**: System MUST [data requirement, e.g., "persist user preferences"]
-- **FR-005**: System MUST [behavior, e.g., "log all security events"]
+- **FR-001**: System MUST [specific capability, e.g., "allow an Operador to create an apontamento linked to an EM_ANDAMENTO order"]
+- **FR-002**: System MUST [specific capability, e.g., "prevent defect quantity from exceeding produced quantity"]
+- **FR-003**: Users MUST be able to [key interaction, e.g., "filter production orders by status and sector"]
+- **FR-004**: System MUST [data requirement, e.g., "persist apontamento start/end timestamps"]
+- **FR-005**: System MUST [behavior, e.g., "restrict OP status transitions to the roles permitted by the state machine"]
 
 *Example of marking unclear requirements:*
 
@@ -100,8 +100,8 @@
 
 ### Key Entities *(include if feature involves data)*
 
-- **[Entity 1]**: [What it represents, key attributes without implementation]
-- **[Entity 2]**: [What it represents, relationships to other entities]
+- **[Entity 1]**: [What it represents, key attributes without implementation — e.g., "Ordem de Produção (OP): a production order with status, planned/produced quantities, and deadline"]
+- **[Entity 2]**: [What it represents, relationships to other entities — e.g., "Apontamento: a production report linked to one OP, one machine, and one operator"]
 
 ## Success Criteria *(mandatory)*
 
@@ -112,10 +112,10 @@
 
 ### Measurable Outcomes
 
-- **SC-001**: [Measurable metric, e.g., "Users can complete account creation in under 2 minutes"]
-- **SC-002**: [Measurable metric, e.g., "System handles 1000 concurrent users without degradation"]
-- **SC-003**: [User satisfaction metric, e.g., "90% of users successfully complete primary task on first attempt"]
-- **SC-004**: [Business metric, e.g., "Reduce support tickets related to [X] by 50%"]
+- **SC-001**: [Measurable metric, e.g., "Operators can register a new apontamento in under 30 seconds"]
+- **SC-002**: [Measurable metric, e.g., "Dashboard KPIs reflect new apontamentos within 5 seconds of submission"]
+- **SC-003**: [User satisfaction metric, e.g., "90% of operators successfully complete an apontamento on first attempt"]
+- **SC-004**: [Business metric, e.g., "Reduce manually corrected OP statuses by 50%"]
 
 ## Assumptions
 

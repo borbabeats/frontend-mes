@@ -21,10 +21,13 @@ description: "Task list template for feature implementation"
 
 ## Path Conventions
 
-- **Single project**: `src/`, `tests/` at repository root
-- **Web app**: `backend/src/`, `frontend/src/`
-- **Mobile**: `api/src/`, `ios/src/` or `android/src/`
-- Paths shown below assume single project - adjust based on plan.md structure
+This project follows the existing MES Frontend structure at repository root:
+- `src/app/` — Next.js App Router pages
+- `src/components/` — reusable UI components
+- `src/services/` — API service layer (Axios)
+- `src/validations/` — Zod schemas
+- `src/types/` / `src/interfaces/` — TypeScript types
+- Paths shown below are illustrative — adjust based on plan.md structure
 
 <!--
   ============================================================================
@@ -49,9 +52,9 @@ description: "Task list template for feature implementation"
 
 **Purpose**: Project initialization and basic structure
 
-- [ ] T001 Create project structure per implementation plan
-- [ ] T002 Initialize [language] project with [framework] dependencies
-- [ ] T003 [P] Configure linting and formatting tools
+- [ ] T001 Create feature folders/files per implementation plan under src/app/, src/components/, src/services/
+- [ ] T002 Add/update TypeScript types in src/types/ for the feature's entities
+- [ ] T003 [P] Add/update Zod validation schema in src/validations/
 
 ---
 
@@ -63,12 +66,12 @@ description: "Task list template for feature implementation"
 
 Examples of foundational tasks (adjust based on your project):
 
-- [ ] T004 Setup database schema and migrations framework
-- [ ] T005 [P] Implement authentication/authorization framework
-- [ ] T006 [P] Setup API routing and middleware structure
-- [ ] T007 Create base models/entities that all stories depend on
-- [ ] T008 Configure error handling and logging infrastructure
-- [ ] T009 Setup environment configuration management
+- [ ] T004 Add base API service function(s) in src/services/ for the feature's backend endpoint(s)
+- [ ] T005 [P] Verify/extend role-based access checks (ADMIN, GERENTE, OPERADOR, PLANEJAMENTO) needed by this feature
+- [ ] T006 [P] Add shared TypeScript interfaces/types consumed by multiple user stories
+- [ ] T007 Create base UI component(s) that all stories depend on
+- [ ] T008 Configure error handling/toast notifications for the new API calls
+- [ ] T009 Confirm feature is compatible with static export (no SSR/server actions)
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
@@ -84,17 +87,17 @@ Examples of foundational tasks (adjust based on your project):
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T010 [P] [US1] Contract test for [endpoint] in tests/contract/test_[name].py
-- [ ] T011 [P] [US1] Integration test for [user journey] in tests/integration/test_[name].py
+- [ ] T010 [P] [US1] Component test for [component] in tests/[name].test.tsx
+- [ ] T011 [P] [US1] Integration test for [user journey] in tests/[name].test.tsx
 
 ### Implementation for User Story 1
 
-- [ ] T012 [P] [US1] Create [Entity1] model in src/models/[entity1].py
-- [ ] T013 [P] [US1] Create [Entity2] model in src/models/[entity2].py
-- [ ] T014 [US1] Implement [Service] in src/services/[service].py (depends on T012, T013)
-- [ ] T015 [US1] Implement [endpoint/feature] in src/[location]/[file].py
-- [ ] T016 [US1] Add validation and error handling
-- [ ] T017 [US1] Add logging for user story 1 operations
+- [ ] T012 [P] [US1] Create [Entity1] type in src/types/[entity1].ts
+- [ ] T013 [P] [US1] Create [Entity2] type in src/types/[entity2].ts
+- [ ] T014 [US1] Implement [service function] in src/services/[service].ts (depends on T012, T013)
+- [ ] T015 [US1] Implement [page/component] in src/app/[route]/page.tsx or src/components/[component].tsx
+- [ ] T016 [US1] Add Zod validation and error handling for the form/action
+- [ ] T017 [US1] Add loading/error UI states for user story 1
 
 **Checkpoint**: At this point, User Story 1 should be fully functional and testable independently
 
@@ -108,14 +111,14 @@ Examples of foundational tasks (adjust based on your project):
 
 ### Tests for User Story 2 (OPTIONAL - only if tests requested) ⚠️
 
-- [ ] T018 [P] [US2] Contract test for [endpoint] in tests/contract/test_[name].py
-- [ ] T019 [P] [US2] Integration test for [user journey] in tests/integration/test_[name].py
+- [ ] T018 [P] [US2] Component test for [component] in tests/[name].test.tsx
+- [ ] T019 [P] [US2] Integration test for [user journey] in tests/[name].test.tsx
 
 ### Implementation for User Story 2
 
-- [ ] T020 [P] [US2] Create [Entity] model in src/models/[entity].py
-- [ ] T021 [US2] Implement [Service] in src/services/[service].py
-- [ ] T022 [US2] Implement [endpoint/feature] in src/[location]/[file].py
+- [ ] T020 [P] [US2] Create [Entity] type in src/types/[entity].ts
+- [ ] T021 [US2] Implement [service function] in src/services/[service].ts
+- [ ] T022 [US2] Implement [page/component] in src/app/[route]/page.tsx or src/components/[component].tsx
 - [ ] T023 [US2] Integrate with User Story 1 components (if needed)
 
 **Checkpoint**: At this point, User Stories 1 AND 2 should both work independently
@@ -130,14 +133,14 @@ Examples of foundational tasks (adjust based on your project):
 
 ### Tests for User Story 3 (OPTIONAL - only if tests requested) ⚠️
 
-- [ ] T024 [P] [US3] Contract test for [endpoint] in tests/contract/test_[name].py
-- [ ] T025 [P] [US3] Integration test for [user journey] in tests/integration/test_[name].py
+- [ ] T024 [P] [US3] Component test for [component] in tests/[name].test.tsx
+- [ ] T025 [P] [US3] Integration test for [user journey] in tests/[name].test.tsx
 
 ### Implementation for User Story 3
 
-- [ ] T026 [P] [US3] Create [Entity] model in src/models/[entity].py
-- [ ] T027 [US3] Implement [Service] in src/services/[service].py
-- [ ] T028 [US3] Implement [endpoint/feature] in src/[location]/[file].py
+- [ ] T026 [P] [US3] Create [Entity] type in src/types/[entity].ts
+- [ ] T027 [US3] Implement [service function] in src/services/[service].ts
+- [ ] T028 [US3] Implement [page/component] in src/app/[route]/page.tsx or src/components/[component].tsx
 
 **Checkpoint**: All user stories should now be independently functional
 
@@ -200,12 +203,12 @@ Examples of foundational tasks (adjust based on your project):
 
 ```bash
 # Launch all tests for User Story 1 together (if tests requested):
-Task: "Contract test for [endpoint] in tests/contract/test_[name].py"
-Task: "Integration test for [user journey] in tests/integration/test_[name].py"
+Task: "Component test for [component] in tests/[name].test.tsx"
+Task: "Integration test for [user journey] in tests/[name].test.tsx"
 
-# Launch all models for User Story 1 together:
-Task: "Create [Entity1] model in src/models/[entity1].py"
-Task: "Create [Entity2] model in src/models/[entity2].py"
+# Launch all types for User Story 1 together:
+Task: "Create [Entity1] type in src/types/[entity1].ts"
+Task: "Create [Entity2] type in src/types/[entity2].ts"
 ```
 
 ---

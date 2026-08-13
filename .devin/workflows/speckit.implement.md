@@ -10,6 +10,17 @@ $ARGUMENTS
 
 You **MUST** consider the user input before proceeding (if not empty).
 
+## Project Context
+
+This project is the **MES Frontend** — a Manufacturing Execution System web client built with Next.js 15 (App Router), React 19, Refine 5, TypeScript, and Material-UI, calling a separate Node.js/Express REST API via Axios. Auth uses NextAuth.js; forms use React Hook Form + Zod.
+
+Enforce these constraints while implementing:
+- **Static export only**: Never introduce SSR, server actions, or dynamic server-side API routes — the app is built as a static site for AWS S3 hosting. All data must be fetched client-side.
+- **Follow existing structure**: Place new code under the established `src/app/`, `src/components/`, `src/services/`, `src/providers/`, `src/validations/`, `src/types/`, `src/interfaces/` folders (see `README.MD` and `DOCUMENTACAO_PROJETO.md`).
+- **Respect domain rules**: Production order (OP) status transitions, apontamento validation rules, and KPI formulas (OEE, efficiency, defect rate) are documented in `DOCUMENTACAO_PROJETO.md` — implement them exactly as specified, don't improvise variations.
+
+Read `README.MD` and `DOCUMENTACAO_PROJETO.md` at the repository root before writing code.
+
 ## Pre-Execution Checks
 
 **Check for extension hooks (before implementation)**:
@@ -39,9 +50,10 @@ You **MUST** consider the user input before proceeding (if not empty).
     **Automatic Pre-Hook**: {extension}
     Executing: `/{command}`
     EXECUTE_COMMAND: {command}
-    
+
     Wait for the result of the hook command before proceeding to the Outline.
     ```
+    After emitting the block above you MUST actually invoke the hook and wait for it to finish before continuing. Run it the same way you would run the command yourself in this agent/session (the invocation may differ from the literal `{command}` id shown above, e.g. a skills-mode agent runs it as `/skill:speckit-...` or `$speckit-...`). Emitting the block alone does not run the hook.
 - If no hooks are registered or `.specify/extensions.yml` does not exist, skip silently
 
 ## Outline
@@ -140,7 +152,7 @@ You **MUST** consider the user input before proceeding (if not empty).
 
 6. Execute implementation following the task plan:
    - **Phase-by-phase execution**: Complete each phase before moving to the next
-   - **Respect dependencies**: Run sequential tasks in order, parallel tasks [P] can run together  
+   - **Respect dependencies**: Run sequential tasks in order, parallel tasks [P] can run together
    - **Follow TDD approach**: Execute test tasks before their corresponding implementation tasks
    - **File-based coordination**: Tasks affecting the same files must run sequentially
    - **Validation checkpoints**: Verify each phase completion before proceeding
@@ -165,35 +177,50 @@ You **MUST** consider the user input before proceeding (if not empty).
    - Check that implemented features match the original specification
    - Validate that tests pass and coverage meets requirements
    - Confirm the implementation follows the technical plan
-   - Report final status with summary of completed work
 
 Note: This command assumes a complete task breakdown exists in tasks.md. If tasks are incomplete or missing, suggest running `/speckit.tasks` first to regenerate the task list.
 
-10. **Check for extension hooks**: After completion validation, check if `.specify/extensions.yml` exists in the project root.
-    - If it exists, read it and look for entries under the `hooks.after_implement` key
-    - If the YAML cannot be parsed or is invalid, skip hook checking silently and continue normally
-    - Filter out hooks where `enabled` is explicitly `false`. Treat hooks without an `enabled` field as enabled by default.
-    - For each remaining hook, do **not** attempt to interpret or evaluate hook `condition` expressions:
-      - If the hook has no `condition` field, or it is null/empty, treat the hook as executable
-      - If the hook defines a non-empty `condition`, skip the hook and leave condition evaluation to the HookExecutor implementation
-    - For each executable hook, output the following based on its `optional` flag:
-      - **Optional hook** (`optional: true`):
-        ```
-        ## Extension Hooks
+## Mandatory Post-Execution Hooks
 
-        **Optional Hook**: {extension}
-        Command: `/{command}`
-        Description: {description}
+**You MUST complete this section before reporting completion to the user.**
 
-        Prompt: {prompt}
-        To execute: `/{command}`
-        ```
-      - **Mandatory hook** (`optional: false`):
-        ```
-        ## Extension Hooks
+Check if `.specify/extensions.yml` exists in the project root.
+- If it does not exist, or no hooks are registered under `hooks.after_implement`, skip to the Completion Report.
+- If it exists, read it and look for entries under the `hooks.after_implement` key.
+- If the YAML cannot be parsed or is invalid, skip hook checking silently and continue to the Completion Report.
+- Filter out hooks where `enabled` is explicitly `false`. Treat hooks without an `enabled` field as enabled by default.
+- For each remaining hook, do **not** attempt to interpret or evaluate hook `condition` expressions:
+  - If the hook has no `condition` field, or it is null/empty, treat the hook as executable
+  - If the hook defines a non-empty `condition`, skip the hook and leave condition evaluation to the HookExecutor implementation
+- For each executable hook, output the following based on its `optional` flag:
+  - **Mandatory hook** (`optional: false`) — **You MUST emit `EXECUTE_COMMAND:` for each mandatory hook**:
+    ```
+    ## Extension Hooks
 
-        **Automatic Hook**: {extension}
-        Executing: `/{command}`
-        EXECUTE_COMMAND: {command}
-        ```
-    - If no hooks are registered or `.specify/extensions.yml` does not exist, skip silently
+    **Automatic Hook**: {extension}
+    Executing: `/{command}`
+    EXECUTE_COMMAND: {command}
+    ```
+    After emitting the block above you MUST actually invoke the hook and wait for it to finish before continuing. Run it the same way you would run the command yourself in this agent/session (the invocation may differ from the literal `{command}` id shown above, e.g. a skills-mode agent runs it as `/skill:speckit-...` or `$speckit-...`). Emitting the block alone does not run the hook.
+  - **Optional hook** (`optional: true`):
+    ```
+    ## Extension Hooks
+
+    **Optional Hook**: {extension}
+    Command: `/{command}`
+    Description: {description}
+
+    Prompt: {prompt}
+    To execute: `/{command}`
+    ```
+
+## Completion Report
+
+Report final status with summary of completed work.
+
+## Done When
+
+- [ ] All tasks in tasks.md completed and marked `[X]`
+- [ ] Implementation validated against specification, plan, and test coverage
+- [ ] Extension hooks dispatched or skipped according to the rules in Mandatory Post-Execution Hooks above
+- [ ] Completion reported to user with summary of completed work
